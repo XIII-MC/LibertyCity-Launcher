@@ -8,7 +8,9 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import java.io.IOException;
+import javax.net.ssl.HttpsURLConnection;
+import java.io.*;
+import java.net.URL;
 
 public class LauncherMain extends AlternativeBase {
 
@@ -16,8 +18,8 @@ public class LauncherMain extends AlternativeBase {
     private final LauncherPreferences launcherPreferences = new LauncherPreferences("LibertyCity | Launcher", 950, 600, Mover.MOVE);
     private final GameLinks gameLinks = new GameLinks("https://libertycity-libs.wstr.fr/v5/libs/www/lc/", "1.12.2.json");
     private final GameEngine gameEngine = new GameEngine(gameFolder, gameLinks, launcherPreferences);
-    private final GameConnect gameConnect = new GameConnect("hypixel.net", "25565");
-    private static boolean serverStatus = true;//URLReader.readUrl("http://libertycity-libs.rf.gd/www/lc/status.cfg").equalsIgnoreCase("Ok");
+    private final GameConnect gameConnect = new GameConnect("spartan.vagdedes.com", "25565");
+    private static String serverStatus = "Maintenance";//URLReader.readUrl("http://libertycity-libs.rf.gd/www/lc/status.cfg").equalsIgnoreCase("Ok");
 
     public static void main(String[] args) {
         Application.launch(args);
@@ -25,6 +27,11 @@ public class LauncherMain extends AlternativeBase {
 
     @Override
     public void start(Stage stage) throws IOException {
+
+        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/status.cfg").openConnection();
+        final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+        serverStatus = inputStream.readLine();
+        urlConnection.getInputStream().close();
 
         Scene scene = new Scene(createContent());
 
@@ -46,6 +53,6 @@ public class LauncherMain extends AlternativeBase {
     }
 
     public static boolean getServerStatus() {
-        return serverStatus;
+        return serverStatus.equalsIgnoreCase("Ok");
     }
 }

@@ -6,6 +6,7 @@ import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
+import fr.trxyy.alternative.alternative_apiv2.build.GameRunner;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.updater.GameUpdater;
 import fr.trxyy.alternative.alternative_apiv2.utils.FontLoader;
@@ -19,6 +20,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -29,6 +31,13 @@ import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 public class LauncherPanel extends IScreen {
 
@@ -69,6 +78,9 @@ public class LauncherPanel extends IScreen {
 
     public LauncherPanel(Pane root, GameEngine engine) {
         this.gameEngine = engine;
+
+
+
 
         /* Top Rectangle */
         this.drawRect(root, 0, 0, engine.getWidth(), 31, Color.rgb(0, 0, 0, 0.7));
@@ -147,7 +159,7 @@ public class LauncherPanel extends IScreen {
         siteImage.setSize(54, 54);
         this.siteButton.setGraphic(siteImage);
         this.siteButton.setOnAction(event -> {
-            openLink("libertycity.fr");
+            openLink("https://www.libertycity.fr");
         });
 
         /* Play button */
@@ -158,14 +170,27 @@ public class LauncherPanel extends IScreen {
             this.playButton.setOnAction(event -> {
                 if (gameAuth != null && gameAuth.isLogged()) {
                     gameSession = gameAuth.getSession();
-                    File jsonFile = downloadVersion(engine.getGameLinks().getJsonUrl(), engine);
+                    File jsonFile = downloadVersion(engine.getGameLinks().getJsonUrl(), engine); //
                     updateGame(gameSession, jsonFile, root);
                 }
             });
+            //this.playButton.setOpacity(0.5D);
         } else {
             this.playButton.setText("Maintenance");
             this.playButton.addStyle(getFxColor(255, 0, 0));
+            this.playButton.setOpacity(0.2D);
+
         }
+        this.playButton.setUnHover(new EventHandler<MouseEvent>() {
+            public void handle(MouseEvent event) {
+                playButton.setOpacity(0.5D);
+            }
+        });
+        this.playButton.setHover(new EventHandler<MouseEvent>() {
+            public void handle(MouseEvent event) {
+                playButton.setOpacity(0.4D);
+            }
+        });
         this.playButton.setFont(getFont(22F));
         this.playButton.setBounds(engine.getWidth() - 190, engine.getHeight() - 100, engine.getWidth() - 50, engine.getHeight() - 80);
         this.playButton.setSize(180, 60);
@@ -320,6 +345,7 @@ public class LauncherPanel extends IScreen {
             public void run() {
                 gameUpdater = new GameUpdater(prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), gameEngine);
                 gameEngine.reg(gameUpdater);
+                LauncherModDownloader.downloadMods();
                 Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), new EventHandler<ActionEvent>() {
                     public void handle(ActionEvent event) {
                         double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);

@@ -28,9 +28,7 @@ public class LauncherSettings extends JPanel implements ActionListener {
         InputStream stream2 = LauncherPanel.class.getResourceAsStream("/resources/font/StratumM.ttf");
         try {
             stratumFont = Font.createFont(Font.TRUETYPE_FONT, stream2).deriveFont(30f);
-        } catch (FontFormatException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (FontFormatException | IOException e) {
             e.printStackTrace();
         }
 
