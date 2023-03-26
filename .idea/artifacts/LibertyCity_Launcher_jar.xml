@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="LibertyCity Launcher:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/LibertyCity_Launcher_jar</output-path>
+    <root id="archive" name="LibertyCity Launcher.jar">
+      <element id="module-output" name="LibertyCity Launcher" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/AlternativeAPI-2.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

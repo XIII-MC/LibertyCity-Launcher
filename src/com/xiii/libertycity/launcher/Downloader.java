@@ -4,10 +4,10 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 // Made by DukeinPro with massive Brain <3
-public class Downloader implements Runnable{
+public class Downloader implements Runnable {
 
-    private String link;
-    private File out;
+    private final String link;
+    private final File out;
 
     public Downloader(String link, File out) {
         this.link = link;
@@ -22,17 +22,17 @@ public class Downloader implements Runnable{
             http.addRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:25.0) Gecko/20100101 Firefox/25.0");
             BufferedInputStream in = new BufferedInputStream(http.getInputStream());
             FileOutputStream outputStream = new FileOutputStream(this.out);
+            System.out.println("Missing file (" + this.out.getName() + ") undetected on client, downloading...");
             byte[] buffer = new byte[1024];
-            int read = 0;
-            while((read = in.read(buffer, 0, 1024)) != -1) {
+            int read;
+            while ((read = in.read(buffer, 0, 1024)) != -1) {
                 outputStream.write(buffer, 0, read);
             }
             outputStream.close();
             in.close();
-            System.out.println("Downloaded: " + out.getName());
 
         } catch (IOException e) {
-            System.out.println("Failed To Download!");
+            System.out.println("Couldn't download file from the distant server.");
             e.printStackTrace();
         }
     }
