@@ -1,4 +1,4 @@
-package com.xiii.libertycity.launcher;
+package com.xiii.libertycity.launcher.utils;
 
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;

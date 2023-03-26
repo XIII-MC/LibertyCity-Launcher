@@ -1,8 +1,8 @@
 package com.xiii.libertycity.launcher.downloader;
 
-import com.xiii.libertycity.launcher.Unzip;
-import com.xiii.libertycity.launcher.Downloader;
+import com.xiii.libertycity.launcher.utils.Unzip;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
+
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -164,7 +164,6 @@ public class LauncherDownloader {
                 if(!file.isDirectory()) {
                     System.out.println("Test NAme: " + file.getName());
                     try {
-
                         File file1 = files.stream().filter(fileName -> fileName.getName().equals(file.getName())).findFirst().get();
                         byte[] sha1 = createSha1(new FileInputStream(file));
                         byte[] sha2 = createSha1(new FileInputStream(file1));
@@ -173,8 +172,6 @@ public class LauncherDownloader {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
-
                 }
             } */
 

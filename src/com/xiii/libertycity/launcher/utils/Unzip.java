@@ -1,4 +1,4 @@
-package com.xiii.libertycity.launcher;
+package com.xiii.libertycity.launcher.utils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

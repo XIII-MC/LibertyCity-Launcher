@@ -2,8 +2,11 @@ package com.xiii.libertycity.launcher;
 
 import com.xiii.libertycity.launcher.auth.CustomAuth;
 import com.xiii.libertycity.launcher.auth.CustomCopy;
-import com.xiii.libertycity.launcher.downloader.LauncherModDownloader;
-import fr.trxyy.alternative.alternative_api_uiv2.components.*;
+import com.xiii.libertycity.launcher.downloader.LauncherDownloader;
+import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherButton;
+import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherImage;
+import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
+import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
@@ -28,8 +31,10 @@ import javafx.util.Duration;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
-import java.io.*;
-import java.net.MalformedURLException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Objects;
@@ -390,7 +395,7 @@ public class LauncherPanel extends IScreen {
         this.updateThread = new Thread(() -> {
             gameUpdater = new GameUpdater(prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), gameEngine);
             gameEngine.reg(gameUpdater);
-            LauncherModDownloader.downloadMods();
+            LauncherDownloader.downloadMods();
             Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
                 double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);
                 updatePercentage.setText(f.format(percent * 100) + "%");
