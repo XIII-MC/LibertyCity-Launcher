@@ -6,44 +6,31 @@ import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
-import fr.trxyy.alternative.alternative_apiv2.build.GameRunner;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.updater.GameUpdater;
 import fr.trxyy.alternative.alternative_apiv2.utils.FontLoader;
-import fr.trxyy.alternative.alternative_authv2.base.GameAuth;
 import fr.trxyy.alternative.alternative_authv2.base.Session;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.apache.commons.io.FileUtils;
-import org.checkerframework.checker.units.qual.C;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Objects;
 
 public class LauncherPanel extends IScreen {
@@ -101,14 +88,17 @@ public class LauncherPanel extends IScreen {
         this.topLabel.setBounds(engine.getWidth() / 2 - 80, -4, 500, 40);
 
         WebView browser = new WebView();
-        browser.setLayoutY(200);
-        browser.setLayoutX(200);
-        browser.setScaleY(100);
-        browser.setScaleX(100);
-        browser.setTranslateX(100);
-        browser.setTranslateY(100);
+        browser.setLayoutY(engine.getHeight() - 110 - 486.5);
+        browser.setLayoutX(engine.getWidth() - 372.5);
+        browser.setScaleY(0.89);
+        browser.setScaleX(0.79);
+        browser.setPrefHeight(520);
         browser.setVisible(true);
-        browser.getEngine().loadContent("<iframe src=\"https://discord.com/widget?id=696690512291299398&theme=dark\" width=\"350\" height=\"500\" allowtransparency=\"true\" frameborder=\"0\" sandbox=\"allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts\"></iframe>");
+        browser.getEngine().load("https://libertycity-libs.wstr.fr/v5/libs/www/lc/discordWidget.html");
+        browser.getEngine().reload();
+        final com.sun.webkit.WebPage webPage = com.sun.javafx.webkit.Accessor.getPageFor(browser.getEngine());
+        webPage.setBackgroundColor(0);
+        root.getChildren().add(browser);
 
         /* Top Minecraft logo next to Label */
         this.topMinecraftLogo = new LauncherImage(root, loadImage(engine, "minecraft.png"));
@@ -397,7 +387,8 @@ public class LauncherPanel extends IScreen {
         this.updateThread = new Thread(() -> {
             gameUpdater = new GameUpdater(prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), gameEngine);
             gameEngine.reg(gameUpdater);
-            LauncherModDownloader.downloadMods();
+            LauncherDownloader.downloadMods();
+            LauncherDownloader.downloadAddons();
             Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
                 double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);
                 updatePercentage.setText(f.format(percent * 100) + "%");

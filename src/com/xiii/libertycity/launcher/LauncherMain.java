@@ -5,6 +5,7 @@ import fr.trxyy.alternative.alternative_apiv2.utils.Mover;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -43,9 +44,7 @@ public class LauncherMain extends AlternativeBase {
         urlConnection.getInputStream().close();
 
         Scene scene = new Scene(createContent());
-
         LauncherBase launcherBase = new LauncherBase(stage, scene, StageStyle.UNDECORATED, gameEngine);
-
         launcherBase.setIconImage(stage, "favicon.png");
     }
 
