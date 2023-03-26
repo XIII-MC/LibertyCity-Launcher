@@ -25,6 +25,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.io.FileUtils;
@@ -97,6 +99,16 @@ public class LauncherPanel extends IScreen {
         this.topLabel.addStyle(getFxTransparent());
         this.topLabel.addStyle(getFxWhiteText());
         this.topLabel.setBounds(engine.getWidth() / 2 - 80, -4, 500, 40);
+
+        WebView browser = new WebView();
+        browser.setLayoutY(200);
+        browser.setLayoutX(200);
+        browser.setScaleY(100);
+        browser.setScaleX(100);
+        browser.setTranslateX(100);
+        browser.setTranslateY(100);
+        browser.setVisible(true);
+        browser.getEngine().loadContent("<iframe src=\"https://discord.com/widget?id=696690512291299398&theme=dark\" width=\"350\" height=\"500\" allowtransparency=\"true\" frameborder=\"0\" sandbox=\"allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts\"></iframe>");
 
         /* Top Minecraft logo next to Label */
         this.topMinecraftLogo = new LauncherImage(root, loadImage(engine, "minecraft.png"));
