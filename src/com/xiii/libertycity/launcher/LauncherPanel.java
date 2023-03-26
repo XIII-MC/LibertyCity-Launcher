@@ -1,5 +1,7 @@
 package com.xiii.libertycity.launcher;
 
+import com.xiii.libertycity.launcher.auth.CustomAuth;
+import com.xiii.libertycity.launcher.auth.CustomCopy;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherButton;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherImage;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
@@ -16,7 +18,7 @@ import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.effect.BlendMode;
+import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -31,6 +33,7 @@ import javax.swing.*;
 import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class LauncherPanel extends IScreen {
@@ -72,6 +75,10 @@ public class LauncherPanel extends IScreen {
     private Thread updateThread;
     private GameUpdater gameUpdater;
 
+    /** BOTTOM */
+    private LauncherLabel annoucementLabel;
+    private LauncherLabel patchNoteLabel;
+
     public LauncherPanel(Pane root, GameEngine engine) {
 
         this.gameEngine = engine;
@@ -99,6 +106,7 @@ public class LauncherPanel extends IScreen {
         final com.sun.webkit.WebPage webPage = com.sun.javafx.webkit.Accessor.getPageFor(browser.getEngine());
         webPage.setBackgroundColor(0);
         root.getChildren().add(browser);
+
 
         /* Top Minecraft logo next to Label */
         this.topMinecraftLogo = new LauncherImage(root, loadImage(engine, "minecraft.png"));
@@ -239,12 +247,11 @@ public class LauncherPanel extends IScreen {
                 this.loginButton.addStyle(getFxColor(0, 120, 0));
                 this.loginButton.setText("Connexion");
                 this.loginButton.setOpacity(1.0D);
-                System.out.println("Deleted");
+                this.playButton.addStyle(getFxColor(61, 61, 61));
+                this.playButton.setOpacity(0.5D);
                 authFile.delete();
                 gameAuth = new CustomAuth();
-                loggedRectangle.setVisible(false);
                 headImage.setVisible(false);
-                accountLabel.setVisible(false);
                 accountNameLabel.setVisible(false);
             } else {
                 this.loginButton.addStyle(getFxColor(255, 160, 0));
@@ -259,10 +266,10 @@ public class LauncherPanel extends IScreen {
                 }
                 if (gameAuth.isAuthenticated) {
                     try {
-                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/banlist.json").openConnection();
+                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/banlist.json").openConnection();
                         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                         if (Objects.equals(gameAuth.getSession().getUuid(), inputStream.readLine())) LauncherMain.setBanned(true);
-                            urlConnection.getInputStream().close();
+                        urlConnection.getInputStream().close();
                     } catch (IOException ignored) {
                     }
 
@@ -278,45 +285,26 @@ public class LauncherPanel extends IScreen {
                         return;
                     }
 
-                    this.loggedRectangle = this.drawRect(root, this.gameEngine.getWidth() - 250, 70, 220, 250, Color.rgb(0, 0, 0, 0.7));
-                    this.loggedRectangle.setVisible(false);
-                    this.loggedRectangle.setOpacity(0.0D);
-
                     this.headImage = new LauncherImage(root);
                     this.headImage.setVisible(false);
                     this.headImage.setFitWidth(32);
                     this.headImage.setFitHeight(32);
-                    this.headImage.setLayoutX(this.gameEngine.getWidth() - 235);
-                    this.headImage.setLayoutY(82);
+                    this.headImage.setLayoutX(this.gameEngine.getWidth() - 368);
+                    this.headImage.setLayoutY(engine.getHeight() - 40);
                     this.headImage.setOpacity(0.0D);
-                    System.out.println("Other");
-                    this.accountLabel = new LauncherLabel(root);
-                    this.accountLabel.setVisible(false);
-                    this.accountLabel.setText("Votre Profil");
-                    this.accountLabel.setFont(getItalicFont(32F));
-                    this.accountLabel.setAlignment(Pos.CENTER_LEFT);
-                    this.accountLabel.setBounds(this.gameEngine.getWidth() - 220, 30, 220, 40);
-                    this.accountLabel.addStyle(getFxWhiteText());
-                    this.accountLabel.setOpacity(0.0D);
 
                     this.accountNameLabel = new LauncherLabel(root);
                     this.accountNameLabel.setVisible(false);
-                    this.accountNameLabel.setText(gameSession.getUsername());
-                    this.accountNameLabel.setFont(getFont(22F));
+                    this.accountNameLabel.setText(gameAuth.getSession().getUsername());
+                    this.accountNameLabel.setFont(getFont(12F));
                     this.accountNameLabel.setAlignment(Pos.CENTER_LEFT);
-                    this.accountNameLabel.setBounds(this.gameEngine.getWidth() - 190, 85, 220, 32);
+                    this.accountNameLabel.setBounds(this.gameEngine.getWidth() - 330, engine.getHeight() - 40, 165, 28);
                     this.accountNameLabel.addStyle(getFxWhiteText());
                     this.accountNameLabel.setOpacity(0.0D);
-
-                    this.loggedRectangle.setVisible(true);
-                    fadeIn(this.loggedRectangle, 300);
 
                     this.headImage.setImage(new Image("https://minotar.net/helm/" + gameSession.getUsername() + "/120.png"));
                     this.headImage.setVisible(true);
                     this.fadeIn(this.headImage, 300);
-
-                    this.accountLabel.setVisible(true);
-                    fadeIn(this.accountLabel, 300);
 
                     this.accountNameLabel.setVisible(true);
                     fadeIn(this.accountNameLabel, 300);
@@ -331,6 +319,27 @@ public class LauncherPanel extends IScreen {
                 }
             }
         });
+
+        /* Annoucements */
+        this.drawRect(root, 160, engine.getHeight() - 100, 5, 90, Color.rgb(0, 140, 255, 0.85D));
+
+        this.annoucementLabel = new LauncherLabel(root);
+        this.annoucementLabel.setText(getAnnouncement(47, 5));
+        this.annoucementLabel.setFont(getFont(13F));
+        this.annoucementLabel.addStyle(getFxWhiteText());
+        this.annoucementLabel.setBounds(170, engine.getHeight() - 135, 400, 90 + 70);
+
+        /* Launcher Patchnote */
+        this.drawRect(root, engine.getWidth() - 375, engine.getHeight() - 100, 5, 45, Color.rgb(40, 190, 0, 0.85D));
+        // 24 for patchNotes
+        this.patchNoteLabel = new LauncherLabel(root);
+        this.patchNoteLabel.setText(getLauncherPatchNotes(24, 3));
+        this.patchNoteLabel.setFont(getFont(10F));
+        this.patchNoteLabel.addStyle(getFxWhiteText());
+        this.patchNoteLabel.setBounds(engine.getWidth() - 367, engine.getHeight() - 115, 165, 45 + 30);
+
+        /* Player profile */
+        this.drawRect(root, engine.getWidth() - 375, engine.getHeight() - 45, 5, 40, Color.rgb(200, 0, 0, 0.85D));
     }
 
     private void updateGame(Session auth, File jsonFile, Pane root) {
@@ -389,6 +398,7 @@ public class LauncherPanel extends IScreen {
             gameEngine.reg(gameUpdater);
             LauncherDownloader.downloadMods();
             LauncherDownloader.downloadAddons();
+            LauncherDownloader.downloadRessourcePacks();
             Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
                 double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);
                 updatePercentage.setText(f.format(percent * 100) + "%");
@@ -435,4 +445,113 @@ public class LauncherPanel extends IScreen {
         } catch (IOException ignored) {
         }
     }
+
+    private String getAnnouncement(int splitAtCharNumber, int showNumberOfLines) {
+        try {
+            String lines;
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/annoucement.json").openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            StringBuilder stringBuilder = new StringBuilder();
+            int count = 0;
+            int didTimes = 0;
+            boolean stop = false;
+            boolean wasFirstLine = true;
+            boolean didNewLine = false;
+            while (!stop) {
+                lines = inputStream.readLine();
+                if(!wasFirstLine && !didNewLine) {
+                    System.out.println("" + lines);
+                    count = 0;
+                    stringBuilder.append("\n");
+                    didTimes++;
+                    if (didTimes >= showNumberOfLines) {
+                        stop = true;
+                    }
+                }
+                didNewLine = false;
+                for (char c : lines.toCharArray()) {
+                    if (!stop) {
+                        count++;
+                        stringBuilder.append(c);
+                        if (count >= splitAtCharNumber) {
+                            didNewLine = true;
+                            stringBuilder.append("\n");
+                            count = 0;
+                            didTimes++;
+                            if (didTimes >= showNumberOfLines) {
+                                stop = true;
+                            }
+                        }
+                    }
+                }
+                wasFirstLine = false;
+            }
+
+            urlConnection.getInputStream().close();
+            return stringBuilder.toString();
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    private String getLauncherPatchNotes(int splitAtCharNumber, int showNumberOfLines) {
+        try {
+            String lines;
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/launcher_patchnote.json").openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            StringBuilder stringBuilder = new StringBuilder();
+            int count = 0;
+            int didTimes = 0;
+            boolean stop = false;
+            boolean wasFirstLine = true;
+            boolean didNewLine = false;
+            while (!stop) {
+                lines = inputStream.readLine();
+                if(!wasFirstLine && !didNewLine) {
+                    System.out.println("" + lines);
+                    count = 0;
+                    stringBuilder.append("\n");
+                    didTimes++;
+                    if (didTimes >= showNumberOfLines) {
+                        stop = true;
+                    }
+                }
+                didNewLine = false;
+                for (char c : lines.toCharArray()) {
+                    if (!stop) {
+                        count++;
+                        stringBuilder.append(c);
+                        if (count >= splitAtCharNumber) {
+                            didNewLine = true;
+                            stringBuilder.append("\n");
+                            count = 0;
+                            didTimes++;
+                            if (didTimes >= showNumberOfLines) {
+                                stop = true;
+                            }
+                        }
+                    }
+                }
+                wasFirstLine = false;
+            }
+
+            urlConnection.getInputStream().close();
+            return stringBuilder.toString();
+        } catch (IOException ignored) {
+        }
+        return null;
+    }
+
+    /*private String getLauncherPatchNotes() {
+        try {
+            final String lines;
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/launcher_patchnote.json").openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            lines = inputStream.readLine();
+            urlConnection.getInputStream().close();
+            return lines;
+        } catch (IOException ignored) {
+        }
+        return null;
+    } */
 }

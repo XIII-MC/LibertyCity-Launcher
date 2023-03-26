@@ -20,7 +20,7 @@ public class LauncherMain extends AlternativeBase {
 
     private final static GameFolder gameFolder = new GameFolder("libertycity");
     private final LauncherPreferences launcherPreferences = new LauncherPreferences("LibertyCity | Launcher", 950, 600, Mover.MOVE);
-    private final GameLinks gameLinks = new GameLinks("https://libertycity-libs.wstr.fr/v5/libs/www/lc/", "1.12.2-dev.json");
+    private final GameLinks gameLinks = new GameLinks("https://libertycity-libs.wstr.fr/v5/libs/www/lc/", "1.12.2.json");
     private final GameEngine gameEngine = new GameEngine(gameFolder, gameLinks, launcherPreferences);
     private final GameConnect gameConnect = new GameConnect("spartan.vagdedes.com", "25565");
 
@@ -33,10 +33,6 @@ public class LauncherMain extends AlternativeBase {
 
     @Override
     public void start(Stage stage) throws IOException {
-
-        WebView webView = new WebView();
-        WebEngine webEngine = webView.getEngine();
-        webEngine.loadContent("<iframe src=\"https://discord.com/widget?id=696690512291299398&theme=dark\" width=\"350\" height=\"500\" allowtransparency=\"true\" frameborder=\"0\" sandbox=\"allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts\"></iframe>");
 
         final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/status.cfg").openConnection();
         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));

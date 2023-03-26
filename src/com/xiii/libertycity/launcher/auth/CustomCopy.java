@@ -1,8 +1,7 @@
-package com.xiii.libertycity.launcher;
+package com.xiii.libertycity.launcher.auth;
 
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.LauncherPane;
-import fr.trxyy.alternative.alternative_authv2.base.GameAuth;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
