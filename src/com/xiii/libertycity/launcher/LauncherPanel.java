@@ -2,6 +2,7 @@ package com.xiii.libertycity.launcher;
 
 import com.xiii.libertycity.launcher.auth.CustomAuth;
 import com.xiii.libertycity.launcher.auth.CustomCopy;
+import com.xiii.libertycity.launcher.downloader.LauncherDownloader;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherButton;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherImage;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;

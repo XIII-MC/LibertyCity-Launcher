@@ -1,6 +1,6 @@
-package com.xiii.libertycity.launcher;
+package com.xiii.libertycity.launcher.downloader;
 
-import com.xiii.libertycity.launcher.downloader.Downloader;
+import com.xiii.libertycity.launcher.utils.Unzip;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
