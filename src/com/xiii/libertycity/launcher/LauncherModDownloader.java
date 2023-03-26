@@ -15,9 +15,10 @@ public class LauncherModDownloader {
 
     public static ArrayList<String> mods = new ArrayList<>();
     public static ArrayList<String> whiteListedMods = new ArrayList<>();
-    public static File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
-    private static final String fileURLMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/game/mods/";
-    private static final String fileURLWhitelistedMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/game/whitelisted_mods/";
+    public static final File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
+    private static final boolean isDev = true;
+    private static final String fileURLMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/mods/";
+    private static final String fileURLWhitelistedMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/whitelisted_mods/";
 
     public static void downloadMods() {
         if (!modFolder.exists()) modFolder.mkdir();
