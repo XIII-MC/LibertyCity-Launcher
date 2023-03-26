@@ -2,7 +2,6 @@ package com.xiii.libertycity.launcher.downloader;
 
 import com.xiii.libertycity.launcher.utils.Unzip;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
-
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -19,11 +18,13 @@ public class LauncherDownloader {
     public static ArrayList<String> mods = new ArrayList<>();
     public static ArrayList<String> whiteListedMods = new ArrayList<>();
     public static ArrayList<String> addons = new ArrayList<>();
+    public static ArrayList<String> ressourcePacks = new ArrayList<>();
     public static final File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
     private static final boolean isDev = true;
     private static final String fileURLMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/mods/";
     private static final String fileURLWhitelistedMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/whitelisted_mods/";
     private static final String fileURLAddons = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/addons/";
+    private static final String fileURLRessourcePacks = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/ressourcepacks/";
 
     public static void downloadMods() {
         if (!modFolder.exists()) modFolder.mkdir();
@@ -130,8 +131,8 @@ public class LauncherDownloader {
             e.printStackTrace();
         }
 
-        for(String addon : addons) {
-            if(GameUtils.getWorkingDirectory("libertycity/" + addon).exists()) {
+        for (String addon : addons) {
+            if (GameUtils.getWorkingDirectory("libertycity/" + addon).exists()) {
                 try {
                     byte[] sha1 = createSha1(new FileInputStream(GameUtils.getWorkingDirectory("libertycity/" + addon)));
                     if (!Arrays.equals(sha1, getSha1FromURL(fileURLAddons + addon))) {
@@ -151,7 +152,7 @@ public class LauncherDownloader {
             final String directoryName = addon.replace(".zip", "");
             final File addonDir = GameUtils.getWorkingDirectory("libertycity/" + directoryName);
             final File addonDirPath = GameUtils.getWorkingDirectory("libertycity\\");
-            if(!addonDir.exists()) {
+            if (!addonDir.exists()) {
                 Unzip unzip = new Unzip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath(), addonDirPath + "\\");
                 unzip.unzip();
             } else {
@@ -160,10 +161,11 @@ public class LauncherDownloader {
                 unzip.unzip();
             }
             /*List<File> files = getFilesFromZip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath());
-            for(File file : Objects.requireNonNull(addonDir.listFiles())) {
-                if(!file.isDirectory()) {
+            for (File file : Objects.requireNonNull(addonDir.listFiles())) {
+                if (!file.isDirectory()) {
                     System.out.println("Test NAme: " + file.getName());
                     try {
+
                         File file1 = files.stream().filter(fileName -> fileName.getName().equals(file.getName())).findFirst().get();
                         byte[] sha1 = createSha1(new FileInputStream(file));
                         byte[] sha2 = createSha1(new FileInputStream(file1));
@@ -172,10 +174,45 @@ public class LauncherDownloader {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
+
                 }
             } */
 
         }
+    }
+
+    public static void downloadRessourcePacks() {
+        File ressourcePackFolder = GameUtils.getWorkingDirectory("libertycity/ressourcepacks");
+        if (!ressourcePackFolder.exists()) ressourcePackFolder.mkdir();
+        try {
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLAddons).openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            String current;
+
+            while ((current = inputStream.readLine()) != null) {
+                if (current.startsWith("<tr>") && current.contains(".zip")) { // :)
+                    final String[] splitString = current.split(".zip\">");
+                    final String zipFileName = splitString[0].replace("<tr><td valign=\"top\"><img src=\"/icons/compressed.gif\" alt=\"[   ]\"></td><td><a href=\"", "") + ".zip";
+                    ressourcePacks.add(zipFileName);
+                }
+            }
+            urlConnection.getInputStream().close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (ressourcePackFolder.listFiles() != null || Objects.requireNonNull(ressourcePackFolder.listFiles()).length > 0) {
+            for (String s : ressourcePacks) {
+                for (File file : Objects.requireNonNull(ressourcePackFolder.listFiles())) {
+
+                }
+            }
+        } else {
+
+        }
+
     }
 
 
