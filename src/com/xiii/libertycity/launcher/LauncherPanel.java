@@ -1,22 +1,19 @@
 package com.xiii.libertycity.launcher;
 
-import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherButton;
-import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherImage;
-import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
-import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
+import com.xiii.libertycity.launcher.auth.CustomAuth;
+import com.xiii.libertycity.launcher.auth.CustomCopy;
+import com.xiii.libertycity.launcher.downloader.LauncherModDownloader;
+import fr.trxyy.alternative.alternative_api_uiv2.components.*;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
-import fr.trxyy.alternative.alternative_apiv2.build.GameRunner;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.updater.GameUpdater;
 import fr.trxyy.alternative.alternative_apiv2.utils.FontLoader;
-import fr.trxyy.alternative.alternative_authv2.base.GameAuth;
 import fr.trxyy.alternative.alternative_authv2.base.Session;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.image.Image;
@@ -25,25 +22,16 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
-import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.apache.commons.io.FileUtils;
-import org.checkerframework.checker.units.qual.C;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Objects;
 
 public class LauncherPanel extends IScreen {
@@ -84,6 +72,10 @@ public class LauncherPanel extends IScreen {
     private LauncherLabel updatePercentage;
     private Thread updateThread;
     private GameUpdater gameUpdater;
+
+    /** BOTTOM */
+    private LauncherLabel annoucementLabel;
+    private LauncherLabel patchNoteLabel;
 
     public LauncherPanel(Pane root, GameEngine engine) {
 
@@ -249,12 +241,11 @@ public class LauncherPanel extends IScreen {
                 this.loginButton.addStyle(getFxColor(0, 120, 0));
                 this.loginButton.setText("Connexion");
                 this.loginButton.setOpacity(1.0D);
-                System.out.println("Deleted");
+                this.playButton.addStyle(getFxColor(61, 61, 61));
+                this.playButton.setOpacity(0.5D);
                 authFile.delete();
                 gameAuth = new CustomAuth();
-                loggedRectangle.setVisible(false);
                 headImage.setVisible(false);
-                accountLabel.setVisible(false);
                 accountNameLabel.setVisible(false);
             } else {
                 this.loginButton.addStyle(getFxColor(255, 160, 0));
@@ -269,7 +260,7 @@ public class LauncherPanel extends IScreen {
                 }
                 if (gameAuth.isAuthenticated) {
                     try {
-                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/banlist.json").openConnection();
+                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/banlist.json").openConnection();
                         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                         if (Objects.equals(gameAuth.getSession().getUuid(), inputStream.readLine())) LauncherMain.setBanned(true);
                             urlConnection.getInputStream().close();
@@ -288,45 +279,26 @@ public class LauncherPanel extends IScreen {
                         return;
                     }
 
-                    this.loggedRectangle = this.drawRect(root, this.gameEngine.getWidth() - 250, 70, 220, 250, Color.rgb(0, 0, 0, 0.7));
-                    this.loggedRectangle.setVisible(false);
-                    this.loggedRectangle.setOpacity(0.0D);
-
                     this.headImage = new LauncherImage(root);
                     this.headImage.setVisible(false);
                     this.headImage.setFitWidth(32);
                     this.headImage.setFitHeight(32);
-                    this.headImage.setLayoutX(this.gameEngine.getWidth() - 235);
-                    this.headImage.setLayoutY(82);
+                    this.headImage.setLayoutX(this.gameEngine.getWidth() - 368);
+                    this.headImage.setLayoutY(engine.getHeight() - 40);
                     this.headImage.setOpacity(0.0D);
-                    System.out.println("Other");
-                    this.accountLabel = new LauncherLabel(root);
-                    this.accountLabel.setVisible(false);
-                    this.accountLabel.setText("Votre Profil");
-                    this.accountLabel.setFont(getItalicFont(32F));
-                    this.accountLabel.setAlignment(Pos.CENTER_LEFT);
-                    this.accountLabel.setBounds(this.gameEngine.getWidth() - 220, 30, 220, 40);
-                    this.accountLabel.addStyle(getFxWhiteText());
-                    this.accountLabel.setOpacity(0.0D);
 
                     this.accountNameLabel = new LauncherLabel(root);
                     this.accountNameLabel.setVisible(false);
-                    this.accountNameLabel.setText(gameSession.getUsername());
-                    this.accountNameLabel.setFont(getFont(22F));
+                    this.accountNameLabel.setText(gameAuth.getSession().getUsername());
+                    this.accountNameLabel.setFont(getFont(12F));
                     this.accountNameLabel.setAlignment(Pos.CENTER_LEFT);
-                    this.accountNameLabel.setBounds(this.gameEngine.getWidth() - 190, 85, 220, 32);
+                    this.accountNameLabel.setBounds(this.gameEngine.getWidth() - 330, engine.getHeight() - 40, 165, 40);
                     this.accountNameLabel.addStyle(getFxWhiteText());
                     this.accountNameLabel.setOpacity(0.0D);
-
-                    this.loggedRectangle.setVisible(true);
-                    fadeIn(this.loggedRectangle, 300);
 
                     this.headImage.setImage(new Image("https://minotar.net/helm/" + gameSession.getUsername() + "/120.png"));
                     this.headImage.setVisible(true);
                     this.fadeIn(this.headImage, 300);
-
-                    this.accountLabel.setVisible(true);
-                    fadeIn(this.accountLabel, 300);
 
                     this.accountNameLabel.setVisible(true);
                     fadeIn(this.accountNameLabel, 300);
@@ -341,6 +313,27 @@ public class LauncherPanel extends IScreen {
                 }
             }
         });
+
+        /* Annoucements */
+        this.drawRect(root, 160, engine.getHeight() - 100, 5, 90, Color.rgb(0, 140, 255, 0.85D));
+
+        this.annoucementLabel = new LauncherLabel(root);
+        this.annoucementLabel.setText(getAnnouncement(47));
+        this.annoucementLabel.setFont(getFont(13F));
+        this.annoucementLabel.addStyle(getFxWhiteText());
+        this.annoucementLabel.setBounds(170, engine.getHeight() - 135, 400, 90);
+
+        /* Launcher Patchnote */
+        this.drawRect(root, engine.getWidth() - 375, engine.getHeight() - 100, 5, 45, Color.rgb(40, 190, 0, 0.85D));
+
+        this.patchNoteLabel = new LauncherLabel(root);
+        this.patchNoteLabel.setText(getLauncherPatchNotes());
+        this.patchNoteLabel.setFont(getFont(10F));
+        this.patchNoteLabel.addStyle(getFxWhiteText());
+        this.patchNoteLabel.setBounds(engine.getWidth() - 367, engine.getHeight() - 115, 165, 45);
+
+        /* Player profile */
+        this.drawRect(root, engine.getWidth() - 375, engine.getHeight() - 45, 5, 40, Color.rgb(200, 0, 0, 0.85D));
     }
 
     private void updateGame(Session auth, File jsonFile, Pane root) {
@@ -431,17 +424,39 @@ public class LauncherPanel extends IScreen {
         return "-fx-text-fill: white;";
     }
 
-    private void clearAuthCache() {
-
+    private String getAnnouncement(int splitAtCharNumber) {
         try {
-            FileOutputStream fooStream = new FileOutputStream(authFile, false);
-
-            fooStream.write("".getBytes());
-            fooStream.close();
-            gameAuth = new CustomAuth();
-            gameSession = null;
-            authFile.delete();
+            final String lines;
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/annoucement.json").openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            lines = inputStream.readLine();
+            StringBuilder stringBuilder = new StringBuilder();
+            int count = 0;
+            for(char c : lines.toCharArray()) {
+                count++;
+                stringBuilder.append(c);
+                if(count >= splitAtCharNumber) {
+                    stringBuilder.append("\n");
+                    count = 0;
+                }
+            }
+            urlConnection.getInputStream().close();
+            return stringBuilder.toString();
         } catch (IOException ignored) {
         }
+        return null;
+    }
+
+    private String getLauncherPatchNotes() {
+        try {
+            final String lines;
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/launcher_patchnote.json").openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            lines = inputStream.readLine();
+            urlConnection.getInputStream().close();
+            return lines;
+        } catch (IOException ignored) {
+        }
+        return null;
     }
 }

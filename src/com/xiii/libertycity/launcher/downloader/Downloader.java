@@ -1,4 +1,4 @@
-package com.xiii.libertycity.launcher;
+package com.xiii.libertycity.launcher.downloader;
 
 import java.io.*;
 import java.net.URL;

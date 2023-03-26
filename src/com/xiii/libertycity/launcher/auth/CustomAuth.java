@@ -1,7 +1,6 @@
-package com.xiii.libertycity.launcher;
+package com.xiii.libertycity.launcher.auth;
 
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
-import fr.trxyy.alternative.alternative_authv2.base.AuthConfig;
 import fr.trxyy.alternative.alternative_authv2.base.AuthConstants;
 import fr.trxyy.alternative.alternative_authv2.base.Logger;
 import fr.trxyy.alternative.alternative_authv2.base.Session;

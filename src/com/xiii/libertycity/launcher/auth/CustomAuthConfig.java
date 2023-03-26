@@ -1,4 +1,4 @@
-package com.xiii.libertycity.launcher;
+package com.xiii.libertycity.launcher.auth;
 
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.JsonUtil;
