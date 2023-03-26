@@ -1,5 +1,7 @@
 package com.xiii.libertycity.launcher.downloader;
 
+import com.xiii.libertycity.launcher.Unzip;
+import com.xiii.libertycity.launcher.Downloader;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
@@ -7,18 +9,21 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
 // Made by DukeinPro with massive Brain <3
-public class LauncherModDownloader {
+public class LauncherDownloader {
 
     public static ArrayList<String> mods = new ArrayList<>();
     public static ArrayList<String> whiteListedMods = new ArrayList<>();
+    public static ArrayList<String> addons = new ArrayList<>();
     public static final File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
     private static final boolean isDev = true;
     private static final String fileURLMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/mods/";
     private static final String fileURLWhitelistedMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/whitelisted_mods/";
+    private static final String fileURLAddons = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/addons/";
 
     public static void downloadMods() {
         if (!modFolder.exists()) modFolder.mkdir();
@@ -106,6 +111,78 @@ public class LauncherModDownloader {
 
     }
 
+    public static void downloadAddons() {
+        try {
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLAddons).openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            String current;
+
+            while ((current = inputStream.readLine()) != null) {
+                if (current.startsWith("<tr>") && current.contains(".zip")) { // :)
+                    final String[] splitString = current.split(".zip\">");
+                    final String zipFileName = splitString[0].replace("<tr><td valign=\"top\"><img src=\"/icons/compressed.gif\" alt=\"[   ]\"></td><td><a href=\"", "") + ".zip";
+                    addons.add(zipFileName);
+                }
+            }
+            urlConnection.getInputStream().close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        for(String addon : addons) {
+            if(GameUtils.getWorkingDirectory("libertycity/" + addon).exists()) {
+                try {
+                    byte[] sha1 = createSha1(new FileInputStream(GameUtils.getWorkingDirectory("libertycity/" + addon)));
+                    if (!Arrays.equals(sha1, getSha1FromURL(fileURLAddons + addon))) {
+                        System.out.println("Unoriginal addon (" + GameUtils.getWorkingDirectory("libertycity/" + addon).getName() + ") detected on client, re-downloading...");
+                        GameUtils.getWorkingDirectory("libertycity/" + addon).delete();
+                        Downloader downloader = new Downloader(fileURLAddons + addon, GameUtils.getWorkingDirectory("libertycity/" + addon));
+                        downloader.run();
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Downloader downloader = new Downloader(fileURLAddons + addon, GameUtils.getWorkingDirectory("libertycity/" + addon));
+                downloader.run();
+            }
+            final String directoryName = addon.replace(".zip", "");
+            final File addonDir = GameUtils.getWorkingDirectory("libertycity/" + directoryName);
+            final File addonDirPath = GameUtils.getWorkingDirectory("libertycity\\");
+            if(!addonDir.exists()) {
+                Unzip unzip = new Unzip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath(), addonDirPath + "\\");
+                unzip.unzip();
+            } else {
+                addonDir.delete();
+                Unzip unzip = new Unzip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath(), addonDirPath + "\\");
+                unzip.unzip();
+            }
+            /*List<File> files = getFilesFromZip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath());
+            for(File file : Objects.requireNonNull(addonDir.listFiles())) {
+                if(!file.isDirectory()) {
+                    System.out.println("Test NAme: " + file.getName());
+                    try {
+
+                        File file1 = files.stream().filter(fileName -> fileName.getName().equals(file.getName())).findFirst().get();
+                        byte[] sha1 = createSha1(new FileInputStream(file));
+                        byte[] sha2 = createSha1(new FileInputStream(file1));
+                        if(!Arrays.equals(sha1, sha2))
+                            System.out.println("" + file.getName());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+            } */
+
+        }
+    }
+
+
+
     public static byte[] getSha1FromURL(String urlToCheck) {
         try {
             final URL url = new URL(urlToCheck);
@@ -128,6 +205,27 @@ public class LauncherModDownloader {
             }
         }
         return digest.digest();
+    }
+
+    public static List<File> getFilesFromZip(String fileZip) {
+        List<File> files = new ArrayList<>();
+        try (ZipFile file = new ZipFile(fileZip)) {
+            Enumeration zipEntries = file.entries();
+            while (zipEntries.hasMoreElements()) {
+                ZipEntry zipEntry = (ZipEntry) zipEntries.nextElement();
+                if (zipEntry.isDirectory()) {
+                    String subDir = fileZip + "\\" +zipEntry.getName();
+                    File as = new File(subDir);
+                    as.mkdirs();
+                } else {
+                    File newFile = new File(zipEntry.getName());
+                    files.add(newFile);
+                }
+            }
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        return files;
     }
 
 }
