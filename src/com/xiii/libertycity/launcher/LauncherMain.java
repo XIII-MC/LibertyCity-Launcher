@@ -22,7 +22,7 @@ public class LauncherMain extends AlternativeBase {
     private final LauncherPreferences launcherPreferences = new LauncherPreferences("LibertyCity | Launcher", 950, 600, Mover.MOVE);
     private final GameLinks gameLinks = new GameLinks("https://libertycity-libs.wstr.fr/v5/libs/www/lc/", "1.12.2.json");
     private final GameEngine gameEngine = new GameEngine(gameFolder, gameLinks, launcherPreferences);
-    private final GameConnect gameConnect = new GameConnect("spartan.vagdedes.com", "25565");
+    private final GameConnect gameConnect = new GameConnect("localhost", "25565");
 
     private static String serverStatus = "Maintenance";
     private static boolean isBanned = false;
