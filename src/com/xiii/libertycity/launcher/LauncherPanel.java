@@ -28,6 +28,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.io.FileUtils;
+import org.checkerframework.checker.units.qual.C;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
@@ -65,7 +66,7 @@ public class LauncherPanel extends IScreen {
     /** LOGIN */
     private final LauncherButton playButton;
     private final LauncherButton loginButton;
-    private GameAuth gameAuth;
+    private CustomAuth gameAuth;
     private Session gameSession;
     private Rectangle loggedRectangle;
     private LauncherImage headImage;
@@ -228,7 +229,7 @@ public class LauncherPanel extends IScreen {
         this.loginButton.addStyle(getFxColor(0, 120, 0));
         this.loginButton.addStyle(getFxWhiteText());
         this.loginButton.setOnAction(event -> {
-            if (gameAuth == null) gameAuth = new GameAuth();
+            if (gameAuth == null) gameAuth = new CustomAuth();
             if (gameAuth.isLogged()) {
                 if (LauncherMain.getServerStatus()) {
                     this.playButton.addStyle(getFxColor(61, 61, 61));
@@ -236,11 +237,19 @@ public class LauncherPanel extends IScreen {
                 this.loginButton.addStyle(getFxColor(0, 120, 0));
                 this.loginButton.setText("Connexion");
                 this.loginButton.setOpacity(1.0D);
+                System.out.println("Deleted");
+                authFile.delete();
+                gameAuth = new CustomAuth();
+                loggedRectangle.setVisible(false);
+                headImage.setVisible(false);
+                accountLabel.setVisible(false);
+                accountNameLabel.setVisible(false);
             } else {
                 this.loginButton.addStyle(getFxColor(255, 160, 0));
                 this.loginButton.setText("Connexion...");
                 this.loginButton.setOpacity(0.5D);
-                showMicrosoftAuth(engine, gameAuth);
+                CustomCopy customCopy = new CustomCopy();
+                customCopy.showMicrosoftAuth(engine, gameAuth);
                 gameSession = gameAuth.getSession();
                 if (LauncherMain.getServerStatus()) {
                     this.playButton.addStyle(getFxColor(0, 120, 0));
@@ -278,7 +287,7 @@ public class LauncherPanel extends IScreen {
                     this.headImage.setLayoutX(this.gameEngine.getWidth() - 235);
                     this.headImage.setLayoutY(82);
                     this.headImage.setOpacity(0.0D);
-
+                    System.out.println("Other");
                     this.accountLabel = new LauncherLabel(root);
                     this.accountLabel.setVisible(false);
                     this.accountLabel.setText("Votre Profil");
@@ -417,7 +426,7 @@ public class LauncherPanel extends IScreen {
 
             fooStream.write("".getBytes());
             fooStream.close();
-            gameAuth = new GameAuth();
+            gameAuth = new CustomAuth();
             gameSession = null;
             authFile.delete();
         } catch (IOException ignored) {

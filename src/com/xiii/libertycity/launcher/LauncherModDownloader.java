@@ -27,7 +27,7 @@ public class LauncherModDownloader {
             String current;
 
             while ((current = inputStream.readLine()) != null) {
-                if(current.startsWith("<tr>") && current.contains(".jar")) { // :)
+                if (current.startsWith("<tr>") && current.contains(".jar")) { // :)
                     final String[] splitString = current.split(".jar\">");
                     final String jarFileName = splitString[0].replace("<tr><td valign=\"top\"><img src=\"/icons/unknown.gif\" alt=\"[   ]\"></td><td><a href=\"", "") + ".jar";
                     mods.add(jarFileName);
@@ -39,7 +39,7 @@ public class LauncherModDownloader {
             String current2;
 
             while ((current2 = inputStream2.readLine()) != null) {
-                if(current2.startsWith("<tr>") && current2.contains(".jar")) { // :)
+                if (current2.startsWith("<tr>") && current2.contains(".jar")) { // :)
                     final String[] splitString = current2.split(".jar\">");
                     final String jarFileName = splitString[0].replace("<tr><td valign=\"top\"><img src=\"/icons/unknown.gif\" alt=\"[   ]\"></td><td><a href=\"", "") + ".jar";
                     whiteListedMods.add(jarFileName);
