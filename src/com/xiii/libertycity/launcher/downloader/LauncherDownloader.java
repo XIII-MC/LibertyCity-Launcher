@@ -20,11 +20,11 @@ public class LauncherDownloader {
     public static ArrayList<String> addons = new ArrayList<>();
     public static ArrayList<String> ressourcePacks = new ArrayList<>();
     public static final File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
-    private static final boolean isDev = true;
+    private static final boolean isDev = false;
     private static final String fileURLMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/mods/";
     private static final String fileURLWhitelistedMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/whitelisted_mods/";
     private static final String fileURLAddons = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/addons/";
-    private static final String fileURLRessourcePacks = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/ressourcepacks/";
+    private static final String fileURLResourcePacks = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/resourcepacks/";
 
     public static void downloadMods() {
         if (!modFolder.exists()) modFolder.mkdir();
@@ -183,10 +183,10 @@ public class LauncherDownloader {
     }
 
     public static void downloadRessourcePacks() {
-        File ressourcePackFolder = GameUtils.getWorkingDirectory("libertycity/ressourcepacks");
+        File ressourcePackFolder = GameUtils.getWorkingDirectory("libertycity/resourcepacks");
         if (!ressourcePackFolder.exists()) ressourcePackFolder.mkdir();
         try {
-            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLAddons).openConnection();
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLResourcePacks).openConnection();
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             String current;
 
@@ -205,12 +205,20 @@ public class LauncherDownloader {
 
         if (ressourcePackFolder.listFiles() != null || Objects.requireNonNull(ressourcePackFolder.listFiles()).length > 0) {
             for (String s : ressourcePacks) {
+                boolean found = false;
                 for (File file : Objects.requireNonNull(ressourcePackFolder.listFiles())) {
-
+                    if(file.getName().equals(s)) found = true;
+                }
+                if (!found) {
+                    Downloader downloader = new Downloader(fileURLResourcePacks + s, new File(ressourcePackFolder.getAbsolutePath() + "\\" + s));
+                    downloader.run();
                 }
             }
         } else {
-
+            for (String s : ressourcePacks) {
+                Downloader downloader = new Downloader(fileURLResourcePacks + s, new File(ressourcePackFolder.getAbsolutePath() + "\\" + s));
+                downloader.run();
+            }
         }
 
     }
