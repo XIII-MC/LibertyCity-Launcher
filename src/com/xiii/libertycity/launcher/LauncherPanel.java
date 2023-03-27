@@ -3,12 +3,14 @@ package com.xiii.libertycity.launcher;
 import com.xiii.libertycity.launcher.auth.CustomAuth;
 import com.xiii.libertycity.launcher.auth.CustomCopy;
 import com.xiii.libertycity.launcher.downloader.LauncherDownloader;
+import com.xiii.libertycity.launcher.utils.VarUtil;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherButton;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherImage;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
+import fr.trxyy.alternative.alternative_apiv2.base.LauncherPane;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.updater.GameUpdater;
 import fr.trxyy.alternative.alternative_apiv2.utils.FontLoader;
@@ -17,6 +19,7 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,6 +32,8 @@ import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.io.*;
@@ -43,6 +48,7 @@ public class LauncherPanel extends IScreen {
     private final GameEngine gameEngine;
     private final File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
     private final DecimalFormat f = new DecimalFormat("00.00");
+    public static VarUtil varUtil = new VarUtil();
 
     /** TOP */
     private final LauncherLabel topLabel;
@@ -408,9 +414,38 @@ public class LauncherPanel extends IScreen {
             }, new KeyValue[0]), new KeyFrame(Duration.seconds(0.1D), new KeyValue[0]));
             t.setCycleCount(Animation.INDEFINITE);
             t.play();
-            downloadGameAndRun(gameUpdater, auth);
+            CustomCopy.downloadGameAndRun(gameEngine, gameUpdater, prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), auth);
         });
         this.updateThread.start();
+        Platform.runLater(new Runnable() {
+            public void run() {
+                varUtil.isRunning = true;
+            }
+        });
+
+        new Thread(() -> {
+            try {
+
+                Thread.sleep(1500);
+                while (varUtil.isRunning) {
+                    Thread.sleep(5);
+                }
+                showFirstScreen();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }).start();
+    }
+
+    public void showFirstScreen() {
+        this.fadeOut(this.updateLabel, 300).setOnFinished(updateLabelEvent -> this.updateLabel.setVisible(false));
+        this.fadeOut(this.updatePercentage, 300).setOnFinished(updatePercentageEvent -> this.updatePercentage.setVisible(false));
+        this.fadeOut(this.progressBar, 300).setOnFinished(progressBarEvent -> this.progressBar.setVisible(false));
+        this.fadeIn(this.loginButton, 300).setOnFinished(loginButtonEvent -> this.loginButton.setVisible(true));
+        this.fadeIn(this.settingsButton, 300).setOnFinished(settingsButtonEvent -> this.settingsButton.setVisible(true));
+        this.fadeIn(this.playButton, 1).setOnFinished(playButtonEvent -> this.playButton.setText("Jouer"));
+        this.fadeIn(this.playButton, 1).setOnFinished(playButtonEvent -> this.playButton.addStyle(getFxColor(0, 120, 0)));
     }
 
     private Font getFont(final float size) {
@@ -461,7 +496,7 @@ public class LauncherPanel extends IScreen {
             while (!stop) {
                 lines = inputStream.readLine();
                 if(!wasFirstLine && !didNewLine) {
-                    System.out.println("" + lines);
+                   // System.out.println("" + lines);
                     count = 0;
                     stringBuilder.append("\n");
                     didTimes++;
@@ -509,7 +544,7 @@ public class LauncherPanel extends IScreen {
             while (!stop) {
                 lines = inputStream.readLine();
                 if(!wasFirstLine && !didNewLine) {
-                    System.out.println("" + lines);
+                    //System.out.println("" + lines);
                     count = 0;
                     stringBuilder.append("\n");
                     didTimes++;
