@@ -55,6 +55,7 @@ public class LauncherPanel extends IScreen {
     private final LauncherImage topMinecraftLogo;
     private final LauncherButton topReduceButton;
     private final LauncherButton topCloseButton;
+    private final LauncherLabel topCreditsLabel;
 
     /** SOCIAL LINKS */
     private final LauncherButton discordButton;
@@ -100,6 +101,14 @@ public class LauncherPanel extends IScreen {
         this.topLabel.addStyle(getFxTransparent());
         this.topLabel.addStyle(getFxWhiteText());
         this.topLabel.setBounds(engine.getWidth() / 2 - 80, -4, 500, 40);
+
+        /* Top Credits Label */
+        this.topCreditsLabel = new LauncherLabel(root);
+        this.topCreditsLabel.setText("Powered By AlternativeAPI also credits to DukeinPro and XIII"); // You might want to change this if you want!
+        this.topCreditsLabel.setFont(getFont(12F));
+        this.topCreditsLabel.addStyle(getFxTransparent());
+        this.topCreditsLabel.addStyle(getFxWhiteText());
+        this.topCreditsLabel.setBounds(10, -4, 500, 40);
 
         WebView browser = new WebView();
         browser.setLayoutY(engine.getHeight() - 110 - 486.5);
