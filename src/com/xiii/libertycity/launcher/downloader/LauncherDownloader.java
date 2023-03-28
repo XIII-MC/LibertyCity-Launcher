@@ -20,7 +20,7 @@ public class LauncherDownloader {
     public static ArrayList<String> addons = new ArrayList<>();
     public static ArrayList<String> ressourcePacks = new ArrayList<>();
     public static final File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
-    private static final boolean isDev = false;
+    private static final boolean isDev = true;
     private static final String fileURLMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/mods/";
     private static final String fileURLWhitelistedMods = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/whitelisted_mods/";
     private static final String fileURLAddons = "https://libertycity-libs.wstr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/addons/";

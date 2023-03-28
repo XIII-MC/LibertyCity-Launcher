@@ -7,8 +7,7 @@ import fr.trxyy.alternative.alternative_apiv2.settings.GameSaver;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class LauncherSettings extends JPanel implements ActionListener {
 
@@ -18,7 +17,9 @@ public class LauncherSettings extends JPanel implements ActionListener {
     public JLabel resolutionLabel, vmLabel;
     public JTextField resolutionField, vmField;
     private JButton saveSettingsButton;
+    private JToggleButton keepLauncherOpenButton;
     private GameEngine engine;
+    private File launcherSettingsFile;
 
     public LauncherSettings(GameEngine engin) {
         this.engine = engin;
@@ -81,6 +82,13 @@ public class LauncherSettings extends JPanel implements ActionListener {
         this.saveSettingsButton.setFont(stratumFont.deriveFont(20F));
         this.saveSettingsButton.addActionListener(this);
         this.add(this.saveSettingsButton);
+
+        this.keepLauncherOpenButton = new JToggleButton("Garder le launcher ouvert", readKeepOpen());
+        this.keepLauncherOpenButton.setForeground(Color.BLACK);
+        this.keepLauncherOpenButton.setBounds(180, 80, 200, 20);
+        this.keepLauncherOpenButton.setFont(stratumFont.deriveFont(15F));
+        this.keepLauncherOpenButton.addActionListener(this);
+        this.add(this.keepLauncherOpenButton);
     }
 
     @Override
@@ -93,6 +101,57 @@ public class LauncherSettings extends JPanel implements ActionListener {
             gameSaver.saveSettings();
             JDialog topFrame = (JDialog) SwingUtilities.getWindowAncestor(this);
             topFrame.dispose();
+
+
+
         }
+
+        if(e.getSource().equals(this.keepLauncherOpenButton)) {
+            String fileName = "keepLauncherOpen";
+            File folder = new File(this.engine.getGameFolder().getGameDir(), "private/settings");
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
+            this.launcherSettingsFile = new File(this.engine.getGameFolder().getGameDir(), "private/settings/" + fileName);
+            try {
+                if (!this.launcherSettingsFile.exists()) this.launcherSettingsFile.createNewFile();
+                FileWriter fw = new FileWriter(this.launcherSettingsFile);
+                fw.write(String.valueOf(this.keepLauncherOpenButton.getModel().isSelected()));
+                fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public boolean readKeepOpen() {
+        String fileName = "keepLauncherOpen";
+        File folder = new File(this.engine.getGameFolder().getGameDir(), "private/settings");
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+
+        this.launcherSettingsFile = new File(this.engine.getGameFolder().getGameDir(), "private/settings/" + fileName);
+        if (!this.launcherSettingsFile.exists()) {
+            try {
+                this.launcherSettingsFile.createNewFile();
+                FileWriter fw = new FileWriter(this.launcherSettingsFile);
+                fw.write("true");
+                fw.close();
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(this.launcherSettingsFile));
+                String line = br.readLine();
+                return Boolean.parseBoolean(line);
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 }
