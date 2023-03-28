@@ -324,7 +324,7 @@ public class LauncherPanel extends IScreen {
         this.drawRect(root, 160, engine.getHeight() - 100, 5, 90, Color.rgb(0, 140, 255, 0.85D));
 
         this.annoucementLabel = new LauncherLabel(root);
-        this.annoucementLabel.setText(getAnnouncement(68, 5));
+        this.annoucementLabel.setText(getAnnouncements(48, 5)); // getAnnouncement(68, 5)   announcement
         this.annoucementLabel.setFont(getFont(13F));
         this.annoucementLabel.addStyle(getFxWhiteText());
         this.annoucementLabel.setBounds(170, engine.getHeight() - 135, 400, 90 + 70);
@@ -461,7 +461,7 @@ public class LauncherPanel extends IScreen {
         return "-fx-text-fill: white;";
     }
 
-    private String getAnnouncement(int splitAtCharNumber, int showNumberOfLines) {
+    private String getAnnouncements(int splitAtCharNumber, int showNumberOfLines) {
         try {
             String lines;
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/annoucement.txt").openConnection();
@@ -470,41 +470,34 @@ public class LauncherPanel extends IScreen {
             int count = 0;
             int didTimes = 0;
             boolean stop = false;
-            boolean wasFirstLine = true;
-            boolean didNewLine = false;
-            while (!stop) {
-                lines = inputStream.readLine();
-                if(!wasFirstLine && !didNewLine) {
-                    // System.out.println("" + lines);
-                    count = 0;
-                    stringBuilder.append("\n");
-                    didTimes++;
-                    if (didTimes >= showNumberOfLines) {
+            boolean wasSpecialCase = false;
+            while ((lines = inputStream.readLine()) != null) {
+                if (!stop) {
+                    if (wasSpecialCase && !lines.startsWith(" ")) lines = " " + lines;
+                    wasSpecialCase = false;
+                    if (!lines.endsWith(",") && lines.length() >= splitAtCharNumber)  didTimes++;
+                    else wasSpecialCase = true;
+
+
+                    if(count != 0 && (!lines.endsWith(",") && lines.length() >= splitAtCharNumber)) lines = lines + "\n";
+                    else count++;
+                    StringBuilder sb = new StringBuilder(lines);
+
+                    int i = 0;
+                    while (i + splitAtCharNumber < sb.length() && (i = sb.lastIndexOf(" ", i + splitAtCharNumber)) != -1) {
+                        sb.replace(i, i + 1, "\n");
+                        didTimes++;
+                    }
+                    stringBuilder.append(sb);
+                    if (didTimes >= showNumberOfLines + 1) {
                         stop = true;
                     }
                 }
-                didNewLine = false;
-                for (char c : lines.toCharArray()) {
-                    if (!stop) {
-                        count++;
-                        stringBuilder.append(c);
-                        if (count >= splitAtCharNumber) {
-                            didNewLine = true;
-                            stringBuilder.append("\n");
-                            count = 0;
-                            didTimes++;
-                            if (didTimes >= showNumberOfLines) {
-                                stop = true;
-                            }
-                        }
-                    }
-                }
-                wasFirstLine = false;
-            }
 
-            urlConnection.getInputStream().close();
+            }
             return stringBuilder.toString();
-        } catch (IOException ignored) {
+        }catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -532,17 +525,19 @@ public class LauncherPanel extends IScreen {
                     }
                 }
                 didNewLine = false;
-                for (char c : lines.toCharArray()) {
-                    if (!stop) {
-                        count++;
-                        stringBuilder.append(c);
-                        if (count >= splitAtCharNumber) {
-                            didNewLine = true;
-                            stringBuilder.append("\n");
-                            count = 0;
-                            didTimes++;
-                            if (didTimes >= showNumberOfLines) {
-                                stop = true;
+                if(lines != null) {
+                    for (char c : lines.toCharArray()) {
+                        if (!stop) {
+                            count++;
+                            stringBuilder.append(c);
+                            if (count >= splitAtCharNumber) {
+                                didNewLine = true;
+                                stringBuilder.append("\n");
+                                count = 0;
+                                didTimes++;
+                                if (didTimes >= showNumberOfLines) {
+                                    stop = true;
+                                }
                             }
                         }
                     }
