@@ -1,12 +1,11 @@
 package com.xiii.libertycity.launcher;
 
+import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherAlert;
 import fr.trxyy.alternative.alternative_apiv2.base.*;
 import fr.trxyy.alternative.alternative_apiv2.utils.Mover;
 import javafx.application.Application;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.web.WebEngine;
-import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -22,12 +21,22 @@ public class LauncherMain extends AlternativeBase {
     private final LauncherPreferences launcherPreferences = new LauncherPreferences("LibertyCity | Launcher", 950, 600, Mover.MOVE);
     private final GameLinks gameLinks = new GameLinks("https://libertycity-libs.wstr.fr/v5/libs/www/lc/", "1.12.2.json");
     private final GameEngine gameEngine = new GameEngine(gameFolder, gameLinks, launcherPreferences);
-    private final GameConnect gameConnect = new GameConnect("localhost", "25565");
+    private final GameConnect gameConnect = new GameConnect("178.33.40.181", "25681");
 
     private static String serverStatus = "Maintenance";
     private static boolean isBanned = false;
+    private static final String launcherVersion = "0001";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+
+        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/launcher_version.cfg").openConnection();
+        final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+        if (!launcherVersion.equalsIgnoreCase(inputStream.readLine())) {
+            new LauncherAlert("Mise à jour requise!", "Veuillez vous rendre sur notre Discord pour télécharger la nouvelle version du launcher!");
+            System.exit(0);
+        }
+        urlConnection.getInputStream().close();
+
         Application.launch(args);
     }
 
