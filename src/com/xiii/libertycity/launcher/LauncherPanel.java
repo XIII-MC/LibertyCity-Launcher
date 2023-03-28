@@ -10,7 +10,6 @@ import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
-import fr.trxyy.alternative.alternative_apiv2.base.LauncherPane;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.updater.GameUpdater;
 import fr.trxyy.alternative.alternative_apiv2.utils.FontLoader;
@@ -22,7 +21,6 @@ import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -33,13 +31,11 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class LauncherPanel extends IScreen {
@@ -47,7 +43,7 @@ public class LauncherPanel extends IScreen {
     /** INTERNALS */
     private final GameEngine gameEngine;
     private final File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
-    private final DecimalFormat f = new DecimalFormat("00.00");
+    private final DecimalFormat f = new DecimalFormat("00,00");
     public static VarUtil varUtil = new VarUtil();
 
     /** TOP */
@@ -55,12 +51,11 @@ public class LauncherPanel extends IScreen {
     private final LauncherImage topMinecraftLogo;
     private final LauncherButton topReduceButton;
     private final LauncherButton topCloseButton;
-    private final LauncherLabel topCreditsLabel;
+    private final LauncherLabel poweredByCredits;
+    private final LauncherLabel devCredits;
 
     /** SOCIAL LINKS */
     private final LauncherButton discordButton;
-    private final LauncherButton twitterButton;
-    private final LauncherButton youtubeButton;
     private final LauncherButton siteButton;
 
     /** LOGIN */
@@ -103,18 +98,27 @@ public class LauncherPanel extends IScreen {
         this.topLabel.setBounds(engine.getWidth() / 2 - 80, -4, 500, 40);
 
         /* Top Credits Label */
-        this.topCreditsLabel = new LauncherLabel(root);
-        this.topCreditsLabel.setText("Powered By AlternativeAPI also credits to DukeinPro and XIII"); // You might want to change this if you want!
-        this.topCreditsLabel.setFont(getFont(12F));
-        this.topCreditsLabel.addStyle(getFxTransparent());
-        this.topCreditsLabel.addStyle(getFxWhiteText());
-        this.topCreditsLabel.setBounds(10, -4, 500, 40);
+        this.poweredByCredits = new LauncherLabel(root);
+        this.poweredByCredits.setText("Powered By AlternativeAPI");
+        this.poweredByCredits.setFont(getFont(9F));
+        this.poweredByCredits.addStyle(getFxTransparent());
+        this.poweredByCredits.addStyle(getFxWhiteText());
+        this.poweredByCredits.setBounds(7, -9, 500, 40);
 
+        /* Top Credits Label */
+        this.devCredits = new LauncherLabel(root);
+        this.devCredits.setText("Launcher par XIII & Dukeinpro");
+        this.devCredits.setFont(getFont(9F));
+        this.devCredits.addStyle(getFxTransparent());
+        this.devCredits.addStyle(getFxWhiteText());
+        this.devCredits.setBounds(7, 1, 500, 40);
+
+        /* Discord Widget */
         WebView browser = new WebView();
         browser.setLayoutY(engine.getHeight() - 110 - 486.5);
         browser.setLayoutX(engine.getWidth() - 372.5);
         browser.setScaleY(0.89);
-        browser.setScaleX(0.79);
+        browser.setScaleX(0.89);
         browser.setPrefHeight(520);
         browser.setVisible(true);
         browser.getEngine().load("https://libertycity-libs.wstr.fr/v5/libs/www/lc/discordWidget.html");
@@ -163,29 +167,9 @@ public class LauncherPanel extends IScreen {
             openLink("discord.com");
         });
 
-        this.twitterButton = new LauncherButton(root);
-        this.twitterButton.setInvisible();
-        this.twitterButton.setBounds(8, engine.getHeight() - 120, 74, 74);
-        final LauncherImage twitterButton = new LauncherImage(root, loadImage(engine, "twitter.png"));
-        twitterButton.setSize(64, 64);
-        this.twitterButton.setGraphic(twitterButton);
-        this.twitterButton.setOnAction(event -> {
-            openLink("twitter.com");
-        });
-
-        this.youtubeButton = new LauncherButton(root);
-        this.youtubeButton.setInvisible();
-        this.youtubeButton.setBounds(75, engine.getHeight() - 60, 64, 64);
-        final LauncherImage youtubeImage = new LauncherImage(root, loadImage(engine, "youtube.png"));
-        youtubeImage.setSize(64, 64);
-        this.youtubeButton.setGraphic(youtubeImage);
-        this.youtubeButton.setOnAction(event -> {
-            openLink("youtube.com");
-        });
-
         this.siteButton = new LauncherButton(root);
         this.siteButton.setInvisible();
-        this.siteButton.setBounds(80, engine.getHeight() - 111, 64, 64);
+        this.siteButton.setBounds(80, engine.getHeight() - 60, 64, 64);
         final LauncherImage siteImage = new LauncherImage(root, loadImage(engine, "site.png"));
         siteImage.setSize(54, 54);
         this.siteButton.setGraphic(siteImage);
@@ -282,7 +266,7 @@ public class LauncherPanel extends IScreen {
                 }
                 if (gameAuth.isAuthenticated) {
                     try {
-                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/banlist.json").openConnection();
+                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
                         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                         if (Objects.equals(gameAuth.getSession().getUuid(), inputStream.readLine())) LauncherMain.setBanned(true);
                         urlConnection.getInputStream().close();
@@ -340,7 +324,7 @@ public class LauncherPanel extends IScreen {
         this.drawRect(root, 160, engine.getHeight() - 100, 5, 90, Color.rgb(0, 140, 255, 0.85D));
 
         this.annoucementLabel = new LauncherLabel(root);
-        this.annoucementLabel.setText(getAnnouncement(47, 5));
+        this.annoucementLabel.setText(getAnnouncement(68, 5));
         this.annoucementLabel.setFont(getFont(13F));
         this.annoucementLabel.addStyle(getFxWhiteText());
         this.annoucementLabel.setBounds(170, engine.getHeight() - 135, 400, 90 + 70);
@@ -362,7 +346,7 @@ public class LauncherPanel extends IScreen {
 
         this.updateLabel = new LauncherLabel(root);
         this.updateLabel.setVisible(false);
-        this.updateLabel.setText("Démarage...");
+        this.updateLabel.setText("Téléchargement des mods...");
         this.updateLabel.setFont(getItalicFont(12F));
         this.updateLabel.setBounds(this.gameEngine.getWidth() - 190, this.gameEngine.getHeight() - 18, 200, 10);
         this.updateLabel.addStyle(getFxWhiteText());
@@ -370,7 +354,7 @@ public class LauncherPanel extends IScreen {
 
         this.updatePercentage = new LauncherLabel(root);
         this.updatePercentage.setVisible(false);
-        this.updatePercentage.setText("0%");
+        this.updatePercentage.setText("00,00%");
         this.updatePercentage.setFont(getItalicFont(12F));
         this.updatePercentage.setBounds(this.gameEngine.getWidth() - 45, this.gameEngine.getHeight() - 18, 200, 10);
         this.updatePercentage.addStyle(getFxWhiteText());
@@ -417,7 +401,7 @@ public class LauncherPanel extends IScreen {
             LauncherDownloader.downloadRessourcePacks();
             Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
                 double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);
-                updatePercentage.setText(f.format(percent * 100) + "%");
+                updatePercentage.setText(f.format(percent * 100.0D) + "%");
                 progressBar.setProgress(percent);
                 updateLabel.setText(gameEngine.getGameUpdater().getUpdateText());
             }, new KeyValue[0]), new KeyFrame(Duration.seconds(0.1D), new KeyValue[0]));
@@ -477,24 +461,10 @@ public class LauncherPanel extends IScreen {
         return "-fx-text-fill: white;";
     }
 
-    private void clearAuthCache() {
-
-        try {
-            FileOutputStream fooStream = new FileOutputStream(authFile, false);
-
-            fooStream.write("".getBytes());
-            fooStream.close();
-            gameAuth = new CustomAuth();
-            gameSession = null;
-            authFile.delete();
-        } catch (IOException ignored) {
-        }
-    }
-
     private String getAnnouncement(int splitAtCharNumber, int showNumberOfLines) {
         try {
             String lines;
-            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/annoucement.json").openConnection();
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/http/annoucement.json").openConnection();
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             StringBuilder stringBuilder = new StringBuilder();
             int count = 0;
@@ -505,7 +475,7 @@ public class LauncherPanel extends IScreen {
             while (!stop) {
                 lines = inputStream.readLine();
                 if(!wasFirstLine && !didNewLine) {
-                   // System.out.println("" + lines);
+                    // System.out.println("" + lines);
                     count = 0;
                     stringBuilder.append("\n");
                     didTimes++;
@@ -542,7 +512,7 @@ public class LauncherPanel extends IScreen {
     private String getLauncherPatchNotes(int splitAtCharNumber, int showNumberOfLines) {
         try {
             String lines;
-            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/launcher_patchnote.json").openConnection();
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/http/launcher_patchnote.json").openConnection();
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             StringBuilder stringBuilder = new StringBuilder();
             int count = 0;
@@ -586,17 +556,4 @@ public class LauncherPanel extends IScreen {
         }
         return null;
     }
-
-    /*private String getLauncherPatchNotes() {
-        try {
-            final String lines;
-            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher_http/launcher_patchnote.json").openConnection();
-            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-            lines = inputStream.readLine();
-            urlConnection.getInputStream().close();
-            return lines;
-        } catch (IOException ignored) {
-        }
-        return null;
-    } */
 }
