@@ -1,8 +1,8 @@
 package com.xiii.libertycity.launcher;
 
+import com.xiii.libertycity.launcher.gamesaver.GameSaver;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.settings.GameInfos;
-import fr.trxyy.alternative.alternative_apiv2.settings.GameSaver;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,7 +33,7 @@ public class LauncherSettings extends JPanel implements ActionListener {
             e.printStackTrace();
         }
 
-        GameSaver saver = new GameSaver(engine);
+        com.xiii.libertycity.launcher.gamesaver.GameSaver saver = new com.xiii.libertycity.launcher.gamesaver.GameSaver(engine);
         GameInfos savedInfos = saver.readConfig();
 
         this.titleLabel = new JLabel();
