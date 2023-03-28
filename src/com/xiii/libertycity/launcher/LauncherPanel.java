@@ -121,7 +121,7 @@ public class LauncherPanel extends IScreen {
         browser.setScaleX(0.89);
         browser.setPrefHeight(520);
         browser.setVisible(true);
-        browser.getEngine().load("https://libertycity-libs.wstr.fr/v5/libs/www/lc/discordWidget.html");
+        browser.getEngine().load("https://libraries-libertycity.websr.fr/v5/libs/www/lc/discordWidget.html");
         browser.getEngine().reload();
         final com.sun.webkit.WebPage webPage = com.sun.javafx.webkit.Accessor.getPageFor(browser.getEngine());
         webPage.setBackgroundColor(0);
@@ -266,7 +266,7 @@ public class LauncherPanel extends IScreen {
                 }
                 if (gameAuth.isAuthenticated) {
                     try {
-                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
+                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
                         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                         if (Objects.equals(gameAuth.getSession().getUuid(), inputStream.readLine())) LauncherMain.setBanned(true);
                         urlConnection.getInputStream().close();
@@ -464,7 +464,7 @@ public class LauncherPanel extends IScreen {
     private String getAnnouncement(int splitAtCharNumber, int showNumberOfLines) {
         try {
             String lines;
-            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/http/annoucement.json").openConnection();
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/annoucement.txt").openConnection();
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             StringBuilder stringBuilder = new StringBuilder();
             int count = 0;
@@ -512,7 +512,7 @@ public class LauncherPanel extends IScreen {
     private String getLauncherPatchNotes(int splitAtCharNumber, int showNumberOfLines) {
         try {
             String lines;
-            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/http/launcher_patchnote.json").openConnection();
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/launcher_patchnote.txt").openConnection();
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
             StringBuilder stringBuilder = new StringBuilder();
             int count = 0;

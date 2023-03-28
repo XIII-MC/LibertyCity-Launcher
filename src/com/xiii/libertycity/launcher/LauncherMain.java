@@ -19,7 +19,7 @@ public class LauncherMain extends AlternativeBase {
 
     private final static GameFolder gameFolder = new GameFolder("libertycity");
     private final LauncherPreferences launcherPreferences = new LauncherPreferences("LibertyCity | Launcher", 950, 600, Mover.MOVE);
-    private final GameLinks gameLinks = new GameLinks("https://libertycity-libs.wstr.fr/v5/libs/www/lc/", "1.12.2.json");
+    private final GameLinks gameLinks = new GameLinks("https://libraries-libertycity.websr.fr/v5/libs/www/lc/", "1.12.2.json");
     private final GameEngine gameEngine = new GameEngine(gameFolder, gameLinks, launcherPreferences);
     private final GameConnect gameConnect = new GameConnect("178.33.40.181", "25681");
 
@@ -27,23 +27,22 @@ public class LauncherMain extends AlternativeBase {
     private static boolean isBanned = false;
     private static final String launcherVersion = "0001";
 
-    public static void main(String[] args) throws IOException {
-
-        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/launcher/launcher_version.cfg").openConnection();
-        final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-        if (!launcherVersion.equalsIgnoreCase(inputStream.readLine())) {
-            new LauncherAlert("Mise à jour requise!", "Veuillez vous rendre sur notre Discord pour télécharger la nouvelle version du launcher!");
-            System.exit(0);
-        }
-        urlConnection.getInputStream().close();
-
+    public static void main(String[] args) {
         Application.launch(args);
     }
 
     @Override
     public void start(Stage stage) throws IOException {
 
-        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libertycity-libs.wstr.fr/v5/libs/www/lc/status.cfg").openConnection();
+        final HttpsURLConnection versionChecker = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/launcher_version.cfg").openConnection();
+        final BufferedReader versionInputStream = new BufferedReader(new InputStreamReader(versionChecker.getInputStream()));
+        if (!launcherVersion.equalsIgnoreCase(versionInputStream.readLine())) {
+            new LauncherAlert("Mise à jour requise! \nVeuillez vous rendre sur notre Discord pour télécharger la nouvelle version du launcher!", "");
+            System.exit(0);
+        }
+        versionChecker.getInputStream().close();
+
+        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/status.cfg").openConnection();
         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         serverStatus = inputStream.readLine();
         urlConnection.getInputStream().close();
