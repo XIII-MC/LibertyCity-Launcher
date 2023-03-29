@@ -252,13 +252,9 @@ public class LauncherPanel extends IScreen {
                 this.loginButton.setOpacity(1.0D);
                 this.playButton.addStyle(getFxColor(61, 61, 61));
                 this.playButton.setOpacity(0.5D);
-                GameUtils.getWorkingDirectory("libertycity/auth_infos.json").delete();
-                //try {
-                    //GameUtils.getWorkingDirectory("libertycity/auth_infos.json").createNewFile();
-                    authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
-                //} catch (IOException e) {
-                //    e.printStackTrace();
-                //}
+                authFile.delete();
+                gameAuth = null;
+                gameSession = null;
                 try {
                     Thread.sleep(10L);
                 } catch (InterruptedException e) {
