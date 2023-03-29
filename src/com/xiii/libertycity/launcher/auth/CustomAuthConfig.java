@@ -1,6 +1,7 @@
 package com.xiii.libertycity.launcher.auth;
 
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
+import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.JsonUtil;
 import fr.trxyy.alternative.alternative_authv2.base.EnumAuthConfig;
 import fr.trxyy.alternative.alternative_authv2.base.Logger;
@@ -24,6 +25,7 @@ public class CustomAuthConfig {
     }
 
     public boolean canRefresh() {
+        this.authConfig = GameUtils.getWorkingDirectory("libertyCity/auth_infos.json");
         return this.authConfig.exists();
     }
 

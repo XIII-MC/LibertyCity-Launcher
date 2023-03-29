@@ -30,11 +30,13 @@ import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.checkerframework.checker.units.qual.C;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Objects;
 
@@ -42,9 +44,10 @@ public class LauncherPanel extends IScreen {
 
     /** INTERNALS */
     private final GameEngine gameEngine;
-    private final File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
+    private File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
     private final DecimalFormat f = new DecimalFormat("00,00");
     public static VarUtil varUtil = new VarUtil();
+    private boolean disconnected = false;
 
     /** TOP */
     private final LauncherLabel topLabel;
@@ -197,13 +200,13 @@ public class LauncherPanel extends IScreen {
         }
         this.playButton.setUnHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !gameAuth.isAuthenticated || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !varUtil.isAuthenticated || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
                 else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) playButton.setOpacity(1.0D);
             }
         });
         this.playButton.setHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !gameAuth.isAuthenticated || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !varUtil.isAuthenticated || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
                 else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) playButton.setOpacity(0.85D);
             }
         });
@@ -249,11 +252,26 @@ public class LauncherPanel extends IScreen {
                 this.loginButton.setOpacity(1.0D);
                 this.playButton.addStyle(getFxColor(61, 61, 61));
                 this.playButton.setOpacity(0.5D);
-                authFile.delete();
-                gameAuth = new CustomAuth();
+                GameUtils.getWorkingDirectory("libertycity/auth_infos.json").delete();
+                //try {
+                    //GameUtils.getWorkingDirectory("libertycity/auth_infos.json").createNewFile();
+                    authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
+                //} catch (IOException e) {
+                //    e.printStackTrace();
+                //}
+                try {
+                    Thread.sleep(10L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                disconnected = true;
+                varUtil.isAuthenticated = false;
                 headImage.setVisible(false);
                 accountNameLabel.setVisible(false);
+                System.out.println("Test2");
             } else {
+                disconnected = false;
+                System.out.println("Test");
                 this.loginButton.addStyle(getFxColor(255, 160, 0));
                 this.loginButton.setText("Connexion...");
                 this.loginButton.setOpacity(0.5D);
@@ -264,7 +282,7 @@ public class LauncherPanel extends IScreen {
                     this.playButton.addStyle(getFxColor(0, 120, 0));
                     this.playButton.setOpacity(1.0D);
                 }
-                if (gameAuth.isAuthenticated) {
+                if (varUtil.isAuthenticated) {
                     try {
                         final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
                         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -322,9 +340,9 @@ public class LauncherPanel extends IScreen {
 
         /* Annoucements */
         this.drawRect(root, 160, engine.getHeight() - 100, 5, 90, Color.rgb(0, 140, 255, 0.85D));
-
+        byte[] announcementText = getAnnouncements(48, 5).getBytes();
         this.annoucementLabel = new LauncherLabel(root);
-        this.annoucementLabel.setText(getAnnouncements(48, 5)); // getAnnouncement(68, 5)   announcement
+        this.annoucementLabel.setText(new String(announcementText, StandardCharsets.UTF_8)); // getAnnouncement(68, 5)   announcement
         this.annoucementLabel.setFont(getFont(13F));
         this.annoucementLabel.addStyle(getFxWhiteText());
         this.annoucementLabel.setBounds(170, engine.getHeight() - 135, 400, 90 + 70);
@@ -332,8 +350,9 @@ public class LauncherPanel extends IScreen {
         /* Launcher Patchnote */
         this.drawRect(root, engine.getWidth() - 375, engine.getHeight() - 100, 5, 45, Color.rgb(40, 190, 0, 0.85D));
         // 24 for patchNotes
+        byte[] patchNoteText = getLauncherPatchNotess(27 + 5, 3).getBytes();
         this.patchNoteLabel = new LauncherLabel(root);
-        this.patchNoteLabel.setText(getLauncherPatchNotes(24, 3));
+        this.patchNoteLabel.setText(new String(patchNoteText, StandardCharsets.UTF_8));
         this.patchNoteLabel.setFont(getFont(10F));
         this.patchNoteLabel.addStyle(getFxWhiteText());
         this.patchNoteLabel.setBounds(engine.getWidth() - 367, engine.getHeight() - 115, 165, 45 + 30);
@@ -490,6 +509,41 @@ public class LauncherPanel extends IScreen {
                     }
                     stringBuilder.append(sb);
                     if (didTimes >= showNumberOfLines + 1) {
+                        stop = true;
+                    }
+                }
+
+            }
+            return stringBuilder.toString();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private String getLauncherPatchNotess(int splitAtCharNumber, int showNumberOfLines) {
+        try {
+            String lines;
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/launcher_patchnote.txt").openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            StringBuilder stringBuilder = new StringBuilder();
+            int count = 0;
+            int didTimes = 0;
+            boolean stop = false;
+            boolean wasSpecialCase = false;
+            while ((lines = inputStream.readLine()) != null) {
+                if (!stop) {
+                    lines = lines + "\n";
+                    didTimes++;
+                    StringBuilder sb = new StringBuilder(lines);
+
+                    int i = 0;
+                    while (i + splitAtCharNumber < sb.length() && (i = sb.lastIndexOf(" ", i + splitAtCharNumber)) != -1) {
+                        sb.replace(i, i + 1, "\n");
+                        didTimes++;
+                    }
+                    stringBuilder.append(sb);
+                    if (didTimes >= showNumberOfLines) {
                         stop = true;
                     }
                 }

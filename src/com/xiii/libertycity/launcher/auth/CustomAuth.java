@@ -1,6 +1,8 @@
 package com.xiii.libertycity.launcher.auth;
 
+import com.xiii.libertycity.launcher.LauncherPanel;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
+import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_authv2.base.AuthConstants;
 import fr.trxyy.alternative.alternative_authv2.base.Logger;
 import fr.trxyy.alternative.alternative_authv2.base.Session;
@@ -18,78 +20,36 @@ public class CustomAuth {
     public boolean isAuthenticated = false;
     private Session session = new Session();
     private CustomAuthConfig authConfig;
+    public WebView webView = new WebView();
+    public AuthListener listener = null;
 
     public CustomAuth() {
+        webView.getEngine().getHistory().getEntries().clear();
     }
 
     public WebView connectMicrosoft(Pane root, GameEngine engine) {
         this.authConfig = new CustomAuthConfig(engine);
-        WebView webView = new WebView();
-        WebEngine webEngine = webView.getEngine();
-        webEngine.load(AuthConstants.MICROSOFT_BASE_URL);
-        webEngine.setJavaScriptEnabled(true);
+        LauncherPanel.varUtil.isAuthenticated = false;
+        webView.getEngine().load("https://login.live.com/oauth20_authorize.srf?client_id=00000000402b5328&response_type=code&redirect_uri=https%3A%2F%2Flogin.live.com%2Foauth20_desktop.srf&scope=XboxLive.signin%20offline_access");
+        webView.getEngine().setJavaScriptEnabled(true);
         webView.setPrefWidth(500.0D);
         webView.setPrefHeight(600.0D);
         root.getChildren().add(webView);
-        webEngine.getHistory().getEntries().addListener((ListChangeListener<? super WebHistory.Entry>) (c) -> {
-            if (c.next() && c.wasAdded()) {
-                c.getAddedSubList().forEach((entry) -> {
-                    try {
-                        if (this.authConfig.canRefresh()) {
-                            Logger.log("Trying to logIn with RefreshToken.");
-                            this.authConfig.loadConfiguration();
-                            MicrosoftModel model = null;
-
-                            try {
-                                model = (new MicrosoftAuth()).getAuthorizationCode(ParamType.REFRESH, this.authConfig.microsoftModel.getRefresh_token());
-                            } catch (Exception var10) {
-                                var10.printStackTrace();
-                            }
-
-                            this.authConfig.updateValues(model);
-                            Session result = null;
-
-                            try {
-                                result = (new MicrosoftAuth()).getLiveToken(model.getAccess_token());
-                            } catch (Exception var11) {
-                                var11.printStackTrace();
-                                if (entry.getUrl().startsWith(AuthConstants.MICROSOFT_RESPONSE_URL)) {
-                                    String authCodex = entry.getUrl().substring(entry.getUrl().indexOf("=") + 1, entry.getUrl().indexOf("&"));
-                                    MicrosoftModel model2 = (new MicrosoftAuth()).getAuthorizationCode(ParamType.AUTH, authCodex);
-                                    this.authConfig.createConfigFile(model2);
-                                    Session result2 = (new MicrosoftAuth()).getLiveToken(model2.getAccess_token());
-                                    this.setSession(result2.getUsername(), result2.getToken(), result2.getUuid());
-                                    Stage stagexx = (Stage)root.getScene().getWindow();
-                                    stagexx.close();
-                                } else {
-                                    this.isAuthenticated = false;
-                                }
-                            }
-
-                            this.setSession(result.getUsername(), result.getToken(), result.getUuid());
-                            Stage stage = (Stage)root.getScene().getWindow();
-                            stage.close();
-                        } else if (entry.getUrl().startsWith(AuthConstants.MICROSOFT_RESPONSE_URL)) {
-                            String authCode = entry.getUrl().substring(entry.getUrl().indexOf("=") + 1, entry.getUrl().indexOf("&"));
-                            MicrosoftModel modelx = (new MicrosoftAuth()).getAuthorizationCode(ParamType.AUTH, authCode);
-                            this.authConfig.createConfigFile(modelx);
-                            Session resultx = (new MicrosoftAuth()).getLiveToken(modelx.getAccess_token());
-                            this.setSession(resultx.getUsername(), resultx.getToken(), resultx.getUuid());
-                            Stage stagex = (Stage)root.getScene().getWindow();
-                            stagex.close();
-                        } else {
-                            this.isAuthenticated = false;
-                        }
-                    } catch (Exception var12) {
-                        var12.printStackTrace();
-                    }
-
-                });
+        webView.getEngine().getHistory().getEntries().addListener(listener = new AuthListener(root, engine, authConfig, session));
+        new Thread(() -> {
+            while(!LauncherPanel.varUtil.isAuthenticated) {
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-
-        });
+            CustomAuth.this.webView.getEngine().getHistory().getEntries().removeListener(listener);
+        }).start();
         return webView;
     }
+
+
 
     private void setSession(String user, String token, String id) {
         this.session.setUsername(user);
@@ -100,7 +60,7 @@ public class CustomAuth {
     }
 
     public boolean isLogged() {
-        return this.isAuthenticated;
+        return LauncherPanel.varUtil.isAuthenticated;
     }
 
     public Session getSession() {
