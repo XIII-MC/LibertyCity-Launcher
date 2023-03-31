@@ -36,7 +36,8 @@ public class CustomAuth {
         webView.setPrefHeight(600.0D);
         root.getChildren().add(webView);
         webView.getEngine().getHistory().getEntries().addListener(listener = new AuthListener(root, engine, authConfig, session));
-        new Thread(() -> {
+
+        Thread t = new Thread(() -> {
             while(!LauncherPanel.varUtil.isAuthenticated) {
                 try {
                     Thread.sleep(5);
@@ -45,7 +46,11 @@ public class CustomAuth {
                 }
             }
             CustomAuth.this.webView.getEngine().getHistory().getEntries().removeListener(listener);
-        }).start();
+        });
+        t.start();
+        while(t.isAlive()) {
+
+        }
         return webView;
     }
 

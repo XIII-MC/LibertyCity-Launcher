@@ -23,7 +23,7 @@ public class GameSaver {
         if (!this.settingsFile.exists()) {
             try {
                 this.settingsFile.createNewFile();
-                this.writeConfig("854x480", "-XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=51 -XX:G1HeapRegionSize=32M");
+                this.writeConfig("854x480", "-Xmx4G -XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=51 -XX:G1HeapRegionSize=32M");
             } catch (IOException var5) {
                 var5.printStackTrace();
             }
@@ -48,7 +48,7 @@ public class GameSaver {
         if (!this.settingsFile.exists()) {
             try {
                 this.settingsFile.createNewFile();
-                this.writeConfig("854x480", "-XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=51 -XX:G1HeapRegionSize=32M");
+                this.writeConfig("854x480", "-Xmx4G -XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=51 -XX:G1HeapRegionSize=32M");
             } catch (IOException var4) {
                 var4.printStackTrace();
             }

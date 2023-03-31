@@ -44,7 +44,7 @@ public class LauncherPanel extends IScreen {
 
     /** INTERNALS */
     private final GameEngine gameEngine;
-    private File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
+    private File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infosTest.json");
     private final DecimalFormat f = new DecimalFormat("00,00");
     public static VarUtil varUtil = new VarUtil();
     private boolean disconnected = false;
@@ -65,7 +65,7 @@ public class LauncherPanel extends IScreen {
     private final LauncherButton playButton;
     private final LauncherButton loginButton;
     private CustomAuth gameAuth;
-    private Session gameSession;
+    public Session gameSession;
     private Rectangle loggedRectangle;
     private LauncherImage headImage;
     private LauncherLabel accountLabel;
@@ -218,7 +218,7 @@ public class LauncherPanel extends IScreen {
 
         /* Settings button */
         this.settingsButton = new LauncherButton(root);
-        this.settingsButton.setInvisible();
+        //
         this.settingsButton.setBounds(engine.getWidth() - 198, engine.getHeight() - 38, 35, 35);
         LauncherImage settingsImage = new LauncherImage(root, loadImage(engine, "settings.png"));
         settingsImage.setSize(28, 28);
@@ -234,6 +234,8 @@ public class LauncherPanel extends IScreen {
             frame.setSize(630, 210);
             frame.setVisible(true);
         });
+        this.settingsButton.setInvisible();
+        //this.settingsButton.setBounds(engine.getWidth() - 198, engine.getHeight() - 38, 35, 35);
 
         /* Microsoft login button */
         this.loginButton = new LauncherButton("Connexion", root);
@@ -272,7 +274,8 @@ public class LauncherPanel extends IScreen {
                 this.loginButton.setText("Connexion...");
                 this.loginButton.setOpacity(0.5D);
                 CustomCopy customCopy = new CustomCopy();
-                customCopy.showMicrosoftAuth(engine, gameAuth);
+                customCopy.showMicrosoftAuth2(engine, gameAuth);
+
                 gameSession = gameAuth.getSession();
                 if (LauncherMain.getServerStatus()) {
                     this.playButton.addStyle(getFxColor(0, 120, 0));

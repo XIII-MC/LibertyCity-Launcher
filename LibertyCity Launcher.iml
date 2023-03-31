@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="AlternativeAPI-2.0" level="project" />
+    <orderEntry type="library" name="openauth-1.1.5" level="project" />
   </component>
 </module>
