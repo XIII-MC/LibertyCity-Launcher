@@ -19,13 +19,15 @@ public class NewAuthConfig {
     public File authConfig;
     public MicrosoftAuthResult microsoftModel;
     public boolean read = false;
+    public GameEngine engine;
 
     public NewAuthConfig(GameEngine engine) {
+        this.engine = engine;
         this.authConfig = new File(engine.getGameFolder().getGameDir(), "auth_infosTest.json");
     }
 
     public boolean canRefresh() {
-        this.authConfig = GameUtils.getWorkingDirectory("libertyCity/auth_infosTest.json");
+        this.authConfig = new File(engine.getGameFolder().getGameDir(), "auth_infosTest.json");
         return this.authConfig.exists();
     }
 

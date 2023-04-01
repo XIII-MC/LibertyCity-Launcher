@@ -44,7 +44,7 @@ public class LauncherPanel extends IScreen {
 
     /** INTERNALS */
     private final GameEngine gameEngine;
-    private File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infosTest.json");
+    private File authFile;
     private final DecimalFormat f = new DecimalFormat("00,00");
     public static VarUtil varUtil = new VarUtil();
     private boolean disconnected = false;
@@ -88,6 +88,7 @@ public class LauncherPanel extends IScreen {
     public LauncherPanel(Pane root, GameEngine engine) {
 
         this.gameEngine = engine;
+        authFile = new File(this.gameEngine.getGameFolder().getGameDir(), "auth_infosTest.json");
 
         /* Top Rectangle */
         this.drawRect(root, 0, 0, engine.getWidth(), 31, Color.rgb(0, 0, 0, 0.7));
@@ -414,9 +415,13 @@ public class LauncherPanel extends IScreen {
         this.updateThread = new Thread(() -> {
             gameUpdater = new GameUpdater(prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), gameEngine);
             gameEngine.reg(gameUpdater);
-            LauncherDownloader.downloadMods();
-            LauncherDownloader.downloadAddons();
-            LauncherDownloader.downloadRessourcePacks();
+            LauncherDownloader downloader = new LauncherDownloader(this.gameEngine);
+            new Thread(() -> {
+                downloader.downloadMods();
+                downloader.downloadAddons();
+                downloader.downloadRessourcePacks();
+            }).start();
+
             Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
                 double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);
                 updatePercentage.setText(f.format(percent * 100.0D) + "%");
@@ -425,6 +430,7 @@ public class LauncherPanel extends IScreen {
             }, new KeyValue[0]), new KeyFrame(Duration.seconds(0.1D), new KeyValue[0]));
             t.setCycleCount(Animation.INDEFINITE);
             t.play();
+            while(!downloader.isDone) {}
             CustomCopy.downloadGameAndRun(gameEngine, gameUpdater, prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), auth);
         });
         this.updateThread.start();

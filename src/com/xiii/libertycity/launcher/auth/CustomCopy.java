@@ -88,7 +88,7 @@ public class CustomCopy {
 
     public void doMicrosoftAuth(Pane panel, GameEngine engine, CustomAuth auth) {
         NewAuthConfig config = new NewAuthConfig(engine);
-        File authFile = GameUtils.getWorkingDirectory("libertyCity/auth_infosTest.json");
+        File authFile = new File(engine.getGameFolder().getGameDir(), "auth_infosTest.json");
         if(!authFile.exists()) {
 
 

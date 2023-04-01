@@ -2,9 +2,16 @@ package com.xiii.libertycity.launcher;
 
 import com.xiii.libertycity.launcher.gamesaver.GameSaver;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
+import fr.trxyy.alternative.alternative_apiv2.base.GameFolder;
+import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.settings.GameInfos;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.*;
@@ -18,12 +25,14 @@ public class LauncherSettings extends JPanel implements ActionListener {
     public JTextField resolutionField, vmField;
     private JButton saveSettingsButton;
     private JToggleButton keepLauncherOpenButton;
+    private JButton chooseDirectory;
     private GameEngine engine;
     private File launcherSettingsFile;
 
     public LauncherSettings(GameEngine engin) {
         this.engine = engin;
         this.setLayout(null);
+
         this.setBackground(new Color(84, 89, 87, 200));
 
         InputStream stream2 = LauncherPanel.class.getResourceAsStream("/resources/font/StratumM.ttf");
@@ -89,6 +98,13 @@ public class LauncherSettings extends JPanel implements ActionListener {
         this.keepLauncherOpenButton.setFont(stratumFont.deriveFont(15F));
         this.keepLauncherOpenButton.addActionListener(this);
         this.add(this.keepLauncherOpenButton);
+
+        this.chooseDirectory = new JButton("Choose Game Directory");
+        this.chooseDirectory.setForeground(Color.BLACK);
+        this.chooseDirectory.setBounds(390, 80, 200, 20);
+        this.chooseDirectory.setFont(stratumFont.deriveFont(15F));
+        this.chooseDirectory.addActionListener(this);
+        this.add(this.chooseDirectory);
     }
 
     @Override
@@ -103,6 +119,47 @@ public class LauncherSettings extends JPanel implements ActionListener {
             topFrame.dispose();
 
 
+
+        }
+
+        if (e.getSource().equals(this.chooseDirectory)) {
+            LauncherPanel.varUtil.getPathToGameDirectory = getFile().getAbsolutePath();
+            File getFileForDirectory = GameUtils.getWorkingDirectory("libertyCity/gameDirectory");
+            FileWriter fw = null;
+            try {
+                fw = new FileWriter(getFileForDirectory);
+                fw.write("" + LauncherPanel.varUtil.getPathToGameDirectory);
+                fw.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+
+            //getFile();
+            JDialog topFrame = (JDialog) SwingUtilities.getWindowAncestor(LauncherSettings.this);
+            topFrame.dispose();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("LibertyCity | Launcher");
+                    alert.setHeaderText("The Launcher Needs to restart to apply the Changes"); // TODO: Translate
+                    alert.setContentText("Click Ok To restart the launcher"); // TODO: Translate
+                    alert.showAndWait();
+                    try {
+                        FileUtils.copyDirectory(LauncherSettings.this.engine.getGameFolder().getGameDir(), new File(LauncherPanel.varUtil.getPathToGameDirectory), true);
+                        if (LauncherSettings.this.engine.getGameFolder().getGameDir().isDirectory()) {
+                            for (File file: LauncherSettings.this.engine.getGameFolder().getGameDir().listFiles()) {
+                                if (!file.getName().equals("gameDirectory"))
+                                    FileUtils.forceDelete(file);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    System.exit(0);
+                }
+            });
 
         }
 
@@ -147,11 +204,24 @@ public class LauncherSettings extends JPanel implements ActionListener {
             try {
                 BufferedReader br = new BufferedReader(new FileReader(this.launcherSettingsFile));
                 String line = br.readLine();
+                br.close();
                 return Boolean.parseBoolean(line);
             }catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return true;
+    }
+
+    public File getFile() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new File("."));
+        chooser.setDialogTitle("Changer le répertoire du jeu"); //TODO: Check if you want it like this
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+        //chooser.setFileFilter(new FileNameExtensionFilter("Changer le répertoire du jeu", ""));
+        chooser.showOpenDialog(LauncherSettings.this);
+        File file = chooser.getSelectedFile();
+        return file;
     }
 }

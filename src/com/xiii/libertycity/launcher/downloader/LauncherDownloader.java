@@ -1,6 +1,7 @@
 package com.xiii.libertycity.launcher.downloader;
 
 import com.xiii.libertycity.launcher.utils.Unzip;
+import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -20,14 +21,26 @@ public class LauncherDownloader {
     public static ArrayList<String> whiteListedMods = new ArrayList<>();
     public static ArrayList<String> addons = new ArrayList<>();
     public static ArrayList<String> ressourcePacks = new ArrayList<>();
-    public static final File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
+    public static File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
+    public static File addonFolder = GameUtils.getWorkingDirectory("libertycity/mods");
+    public static File resourcePackFolder = GameUtils.getWorkingDirectory("libertycity/mods");
     private static final boolean isDev = false;
     private static final String fileURLMods = "https://libraries-libertycity.websr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/mods/";
     private static final String fileURLWhitelistedMods = "https://libraries-libertycity.websr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/whitelisted_mods/";
     private static final String fileURLAddons = "https://libraries-libertycity.websr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/addons/";
     private static final String fileURLResourcePacks = "https://libraries-libertycity.websr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/resourcepacks/";
+    private final GameEngine engine;
+    public boolean isDone = true;
 
-    public static void downloadMods() {
+    public LauncherDownloader(GameEngine engine) {
+        this.engine = engine;
+        modFolder = new File(engine.getGameFolder().getGameDir(), "mods");
+        addonFolder = new File(engine.getGameFolder().getGameDir(), "mods");
+        resourcePackFolder = new File(engine.getGameFolder().getGameDir(), "mods");
+    }
+
+    public void downloadMods() {
+        isDone = false;
         if (!modFolder.exists()) modFolder.mkdir();
         try {
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLMods).openConnection();
@@ -111,9 +124,10 @@ public class LauncherDownloader {
             }
         }
 
+
     }
 
-    public static void downloadAddons() {
+    public void downloadAddons() {
         try {
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLAddons).openConnection();
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -133,13 +147,13 @@ public class LauncherDownloader {
         }
 
         for (String addon : addons) {
-            if (GameUtils.getWorkingDirectory("libertycity/" + addon).exists()) {
+            if (new File(this.engine.getGameFolder().getGameDir(), addon).exists()) {
                 try {
-                    byte[] sha1 = createSha1(new FileInputStream(GameUtils.getWorkingDirectory("libertycity/" + addon)));
+                    byte[] sha1 = createSha1(new FileInputStream(new File(this.engine.getGameFolder().getGameDir(), addon)));
                     if (!Arrays.equals(sha1, getSha1FromURL(fileURLAddons + addon))) {
-                        System.out.println("Unoriginal addon (" + GameUtils.getWorkingDirectory("libertycity/" + addon).getName() + ") detected on client, re-downloading...");
-                        GameUtils.getWorkingDirectory("libertycity/" + addon).delete();
-                        Downloader downloader = new Downloader(fileURLAddons + addon, GameUtils.getWorkingDirectory("libertycity/" + addon));
+                        System.out.println("Unoriginal addon (" + new File(this.engine.getGameFolder().getGameDir(), addon).getName() + ") detected on client, re-downloading...");
+                        new File(this.engine.getGameFolder().getGameDir(), addon).delete();
+                        Downloader downloader = new Downloader(fileURLAddons + addon, new File(this.engine.getGameFolder().getGameDir(), addon));
                         downloader.run();
 
                     }
@@ -147,18 +161,18 @@ public class LauncherDownloader {
                     e.printStackTrace();
                 }
             } else {
-                Downloader downloader = new Downloader(fileURLAddons + addon, GameUtils.getWorkingDirectory("libertycity/" + addon));
+                Downloader downloader = new Downloader(fileURLAddons + addon, new File(this.engine.getGameFolder().getGameDir(), addon));
                 downloader.run();
             }
             final String directoryName = addon.replace(".zip", "");
-            final File addonDir = GameUtils.getWorkingDirectory("libertycity/" + directoryName);
-            final File addonDirPath = GameUtils.getWorkingDirectory("libertycity\\");
+            final File addonDir = new File(this.engine.getGameFolder().getGameDir(), directoryName);
+            final File addonDirPath = this.engine.getGameFolder().getGameDir();
             if (!addonDir.exists()) {
-                Unzip unzip = new Unzip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath(), addonDirPath + "\\");
+                Unzip unzip = new Unzip(new File(this.engine.getGameFolder().getGameDir(), addon).getAbsolutePath(), addonDirPath + "\\");
                 unzip.unzip();
             } else {
                 addonDir.delete();
-                Unzip unzip = new Unzip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath(), addonDirPath + "\\");
+                Unzip unzip = new Unzip(new File(this.engine.getGameFolder().getGameDir(), addon).getAbsolutePath(), addonDirPath + "\\");
                 unzip.unzip();
             }
             /*List<File> files = getFilesFromZip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath());
@@ -183,9 +197,8 @@ public class LauncherDownloader {
         }
     }
 
-    public static void downloadRessourcePacks() {
-        File ressourcePackFolder = GameUtils.getWorkingDirectory("libertycity/resourcepacks");
-        if (!ressourcePackFolder.exists()) ressourcePackFolder.mkdir();
+    public void downloadRessourcePacks() {
+        if (!resourcePackFolder.exists()) resourcePackFolder.mkdir();
         try {
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLResourcePacks).openConnection();
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -204,29 +217,30 @@ public class LauncherDownloader {
             e.printStackTrace();
         }
 
-        if (ressourcePackFolder.listFiles() != null || Objects.requireNonNull(ressourcePackFolder.listFiles()).length > 0) {
+        if (resourcePackFolder.listFiles() != null || Objects.requireNonNull(resourcePackFolder.listFiles()).length > 0) {
             for (String s : ressourcePacks) {
                 boolean found = false;
-                for (File file : Objects.requireNonNull(ressourcePackFolder.listFiles())) {
+                for (File file : Objects.requireNonNull(resourcePackFolder.listFiles())) {
                     if(file.getName().equals(s)) found = true;
                 }
                 if (!found) {
-                    Downloader downloader = new Downloader(fileURLResourcePacks + s, new File(ressourcePackFolder.getAbsolutePath() + "\\" + s));
+                    Downloader downloader = new Downloader(fileURLResourcePacks + s, new File(resourcePackFolder.getAbsolutePath() + "\\" + s));
                     downloader.run();
                 }
             }
         } else {
             for (String s : ressourcePacks) {
-                Downloader downloader = new Downloader(fileURLResourcePacks + s, new File(ressourcePackFolder.getAbsolutePath() + "\\" + s));
+                Downloader downloader = new Downloader(fileURLResourcePacks + s, new File(resourcePackFolder.getAbsolutePath() + "\\" + s));
                 downloader.run();
             }
         }
+        isDone = true;
 
     }
 
 
 
-    public static byte[] getSha1FromURL(String urlToCheck) {
+    public byte[] getSha1FromURL(String urlToCheck) {
         try {
             final URL url = new URL(urlToCheck);
             final HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -250,7 +264,7 @@ public class LauncherDownloader {
         return digest.digest();
     }
 
-    public static List<File> getFilesFromZip(String fileZip) {
+    public List<File> getFilesFromZip(String fileZip) {
         List<File> files = new ArrayList<>();
         try (ZipFile file = new ZipFile(fileZip)) {
             Enumeration zipEntries = file.entries();
