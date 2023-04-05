@@ -123,43 +123,47 @@ public class LauncherSettings extends JPanel implements ActionListener {
         }
 
         if (e.getSource().equals(this.chooseDirectory)) {
-            LauncherPanel.varUtil.getPathToGameDirectory = getFile().getAbsolutePath();
-            File getFileForDirectory = GameUtils.getWorkingDirectory("libertyCity/gameDirectory");
-            FileWriter fw = null;
-            try {
-                fw = new FileWriter(getFileForDirectory);
-                fw.write("" + LauncherPanel.varUtil.getPathToGameDirectory);
-                fw.close();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            File dir = getFile();
+            if (dir != null) {
+                LauncherPanel.varUtil.getPathToGameDirectory = getFile().getAbsolutePath();
 
-
-            //getFile();
-            JDialog topFrame = (JDialog) SwingUtilities.getWindowAncestor(LauncherSettings.this);
-            topFrame.dispose();
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("LibertyCity | Launcher");
-                    alert.setHeaderText("The Launcher Needs to restart to apply the Changes"); // TODO: Translate
-                    alert.setContentText("Click Ok To restart the launcher"); // TODO: Translate
-                    alert.showAndWait();
-                    try {
-                        FileUtils.copyDirectory(LauncherSettings.this.engine.getGameFolder().getGameDir(), new File(LauncherPanel.varUtil.getPathToGameDirectory), true);
-                        if (LauncherSettings.this.engine.getGameFolder().getGameDir().isDirectory()) {
-                            for (File file: LauncherSettings.this.engine.getGameFolder().getGameDir().listFiles()) {
-                                if (!file.getName().equals("gameDirectory"))
-                                    FileUtils.forceDelete(file);
-                            }
-                        }
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                    System.exit(0);
+                File getFileForDirectory = GameUtils.getWorkingDirectory("libertyCity/gameDirectory");
+                FileWriter fw = null;
+                try {
+                    fw = new FileWriter(getFileForDirectory);
+                    fw.write("" + LauncherPanel.varUtil.getPathToGameDirectory);
+                    fw.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-            });
+
+
+                //getFile();
+                JDialog topFrame = (JDialog) SwingUtilities.getWindowAncestor(LauncherSettings.this);
+                topFrame.dispose();
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("LibertyCity | Launcher");
+                        alert.setHeaderText("The Launcher Needs to restart to apply the Changes"); // TODO: Translate
+                        alert.setContentText("Click Ok To restart the launcher"); // TODO: Translate
+                        alert.showAndWait();
+                        try {
+                            FileUtils.copyDirectory(LauncherSettings.this.engine.getGameFolder().getGameDir(), new File(LauncherPanel.varUtil.getPathToGameDirectory), true);
+                            if (LauncherSettings.this.engine.getGameFolder().getGameDir().isDirectory()) {
+                                for (File file : LauncherSettings.this.engine.getGameFolder().getGameDir().listFiles()) {
+                                    if (!file.getName().equals("gameDirectory"))
+                                        FileUtils.forceDelete(file);
+                                }
+                            }
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                        System.exit(0);
+                    }
+                });
+            }
 
         }
 
