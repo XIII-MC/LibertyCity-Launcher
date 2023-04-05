@@ -20,7 +20,7 @@ public class LauncherDownloader {
     public static ArrayList<String> mods = new ArrayList<>();
     public static ArrayList<String> whiteListedMods = new ArrayList<>();
     public static ArrayList<String> addons = new ArrayList<>();
-    public static ArrayList<String> ressourcePacks = new ArrayList<>();
+    public static ArrayList<String> resourcePacks = new ArrayList<>();
     public static File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
     public static File addonFolder = GameUtils.getWorkingDirectory("libertycity/mods");
     public static File resourcePackFolder = GameUtils.getWorkingDirectory("libertycity/mods");
@@ -175,29 +175,10 @@ public class LauncherDownloader {
                 Unzip unzip = new Unzip(new File(this.engine.getGameFolder().getGameDir(), addon).getAbsolutePath(), addonDirPath + "\\");
                 unzip.unzip();
             }
-            /*List<File> files = getFilesFromZip(GameUtils.getWorkingDirectory("libertycity/" + addon).getAbsolutePath());
-            for (File file : Objects.requireNonNull(addonDir.listFiles())) {
-                if (!file.isDirectory()) {
-                    System.out.println("Test NAme: " + file.getName());
-                    try {
-
-                        File file1 = files.stream().filter(fileName -> fileName.getName().equals(file.getName())).findFirst().get();
-                        byte[] sha1 = createSha1(new FileInputStream(file));
-                        byte[] sha2 = createSha1(new FileInputStream(file1));
-                        if(!Arrays.equals(sha1, sha2))
-                            System.out.println("" + file.getName());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-
-                }
-            } */
-
         }
     }
 
-    public void downloadRessourcePacks() {
+    public void downloadResourcePacks() {
         if (!resourcePackFolder.exists()) resourcePackFolder.mkdir();
         try {
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL(fileURLResourcePacks).openConnection();
@@ -208,7 +189,7 @@ public class LauncherDownloader {
                 if (current.startsWith("<tr>") && current.contains(".zip")) { // :)
                     final String[] splitString = current.split(".zip\">");
                     final String zipFileName = splitString[0].replace("<tr><td valign=\"top\"><img src=\"/icons/compressed.gif\" alt=\"[   ]\"></td><td><a href=\"", "") + ".zip";
-                    ressourcePacks.add(zipFileName);
+                    resourcePacks.add(zipFileName);
                 }
             }
             urlConnection.getInputStream().close();
@@ -218,7 +199,7 @@ public class LauncherDownloader {
         }
 
         if (resourcePackFolder.listFiles() != null || Objects.requireNonNull(resourcePackFolder.listFiles()).length > 0) {
-            for (String s : ressourcePacks) {
+            for (String s : resourcePacks) {
                 boolean found = false;
                 for (File file : Objects.requireNonNull(resourcePackFolder.listFiles())) {
                     if(file.getName().equals(s)) found = true;
@@ -229,7 +210,7 @@ public class LauncherDownloader {
                 }
             }
         } else {
-            for (String s : ressourcePacks) {
+            for (String s : resourcePacks) {
                 Downloader downloader = new Downloader(fileURLResourcePacks + s, new File(resourcePackFolder.getAbsolutePath() + "\\" + s));
                 downloader.run();
             }

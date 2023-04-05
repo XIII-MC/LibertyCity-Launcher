@@ -10,7 +10,6 @@ import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
-import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.updater.GameUpdater;
 import fr.trxyy.alternative.alternative_apiv2.utils.FontLoader;
 import fr.trxyy.alternative.alternative_authv2.base.Session;
@@ -30,7 +29,6 @@ import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.checkerframework.checker.units.qual.C;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
@@ -201,13 +199,13 @@ public class LauncherPanel extends IScreen {
         }
         this.playButton.setUnHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !varUtil.isAuthenticated || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
                 else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) playButton.setOpacity(1.0D);
             }
         });
         this.playButton.setHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !varUtil.isAuthenticated || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
                 else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) playButton.setOpacity(0.85D);
             }
         });
@@ -255,34 +253,24 @@ public class LauncherPanel extends IScreen {
                 this.loginButton.setOpacity(1.0D);
                 this.playButton.addStyle(getFxColor(61, 61, 61));
                 this.playButton.setOpacity(0.5D);
-                authFile.delete();
                 gameAuth = null;
                 gameSession = null;
-                try {
-                    Thread.sleep(10L);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                disconnected = true;
-                varUtil.isAuthenticated = false;
-                headImage.setVisible(false);
-                accountNameLabel.setVisible(false);
-                System.out.println("Test2");
+                authFile.delete();
+                CustomAuth.resetAuth();
+                this.fadeOut(this.headImage, 500).setOnFinished(headImageEvent -> headImage.setVisible(false));
+                this.fadeOut(this.accountNameLabel, 500).setOnFinished(accountNameLabelEvent -> accountNameLabel.setVisible(false));
             } else {
-                disconnected = false;
-                System.out.println("Test");
                 this.loginButton.addStyle(getFxColor(255, 160, 0));
                 this.loginButton.setText("Connexion...");
                 this.loginButton.setOpacity(0.5D);
                 CustomCopy customCopy = new CustomCopy();
-                customCopy.showMicrosoftAuth2(engine, gameAuth);
-
+                customCopy.showMicrosoftAuth(engine, gameAuth);
                 gameSession = gameAuth.getSession();
                 if (LauncherMain.getServerStatus()) {
                     this.playButton.addStyle(getFxColor(0, 120, 0));
                     this.playButton.setOpacity(1.0D);
                 }
-                if (varUtil.isAuthenticated) {
+                if (gameAuth.isLogged()) {
                     try {
                         final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
                         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
@@ -333,7 +321,7 @@ public class LauncherPanel extends IScreen {
                     }
                     this.loginButton.addStyle(getFxColor(0, 120, 0));
                     this.loginButton.setText("Connexion");
-                    this.loginButton.setOpacity(1.0D);
+                    this.loginButton.setOpacity(0.5D);
                 }
             }
         });
@@ -419,7 +407,7 @@ public class LauncherPanel extends IScreen {
             new Thread(() -> {
                 downloader.downloadMods();
                 downloader.downloadAddons();
-                downloader.downloadRessourcePacks();
+                downloader.downloadResourcePacks();
             }).start();
 
             Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
@@ -430,7 +418,6 @@ public class LauncherPanel extends IScreen {
             }, new KeyValue[0]), new KeyFrame(Duration.seconds(0.1D), new KeyValue[0]));
             t.setCycleCount(Animation.INDEFINITE);
             t.play();
-            while(!downloader.isDone) {}
             CustomCopy.downloadGameAndRun(gameEngine, gameUpdater, prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), auth);
         });
         this.updateThread.start();

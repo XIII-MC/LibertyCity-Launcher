@@ -19,11 +19,11 @@ import java.io.*;
 import java.util.*;
 
 public class GameRunner {
-    private MinecraftVersion minecraftVersion;
-    private GameEngine engine;
-    private GameFolder workDir;
-    private Session session;
-    private GameInfos savedInfos;
+    private final MinecraftVersion minecraftVersion;
+    private final GameEngine engine;
+    private final GameFolder workDir;
+    private final Session session;
+    private final GameInfos savedInfos;
 
     public GameRunner(Session ses, MinecraftVersion mcVersion, GameEngine engin) {
         this.session = ses;
@@ -67,7 +67,7 @@ public class GameRunner {
                 BufferedReader br = new BufferedReader(new FileReader(keepOpenSettingsFile));
                 String line = br.readLine();
                 return Boolean.parseBoolean(line);
-            }catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

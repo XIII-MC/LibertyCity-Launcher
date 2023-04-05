@@ -9,7 +9,7 @@ import java.io.*;
 public class GameSaver {
     public GameInfos infos;
     public File settingsFile;
-    private GameEngine engine;
+    private final GameEngine engine;
 
     public GameSaver(GameEngine engin) {
         this.engine = engin;
@@ -48,9 +48,9 @@ public class GameSaver {
         if (!this.settingsFile.exists()) {
             try {
                 this.settingsFile.createNewFile();
-                this.writeConfig("854x480", "-Xmx4G -XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=51 -XX:G1HeapRegionSize=32M");
-            } catch (IOException var4) {
-                var4.printStackTrace();
+                this.writeConfig("854x480", "-Xmx6G -XX:+UseG1GC -Dsun.rmi.dgc.server.gcInterval=2147483646 -XX:+UnlockExperimentalVMOptions -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=51 -XX:G1HeapRegionSize=32M");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         } else {
             this.writeConfig(this.infos.getResolution(), this.infos.getVmArguments());
@@ -64,8 +64,8 @@ public class GameSaver {
             fw.write(Encoder.encryptString(s[0]) + ";");
             fw.write(Encoder.encryptString(s[1]));
             fw.close();
-        } catch (IOException var3) {
-            System.out.println(var3.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }
@@ -79,8 +79,8 @@ public class GameSaver {
             String[] result = line.split(";");
             accountRead = new GameInfos(Encoder.decryptString(result[0]), Encoder.decryptString(result[1]));
             br.close();
-        } catch (IOException var5) {
-            System.out.println(var5.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         return accountRead;
