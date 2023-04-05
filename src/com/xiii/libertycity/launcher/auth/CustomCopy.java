@@ -100,6 +100,7 @@ public class CustomCopy {
                     auth.getSession().setToken(result2.getAccessToken());
                     auth.getSession().setUsername(result2.getProfile().getName());
                     auth.getSession().setUuid(result2.getProfile().getId());
+                    config.createConfigFile(result2);
                     LauncherPanel.varUtil.isAuthenticated = true;
                     Platform.runLater(new Runnable() {
                         @Override
