@@ -99,7 +99,7 @@ public class LauncherSettings extends JPanel implements ActionListener {
         this.keepLauncherOpenButton.addActionListener(this);
         this.add(this.keepLauncherOpenButton);
 
-        this.chooseDirectory = new JButton("Choose Game Directory");
+        this.chooseDirectory = new JButton("Changer le répertoire du jeu");
         this.chooseDirectory.setForeground(Color.BLACK);
         this.chooseDirectory.setBounds(390, 80, 200, 20);
         this.chooseDirectory.setFont(stratumFont.deriveFont(15F));
@@ -146,8 +146,8 @@ public class LauncherSettings extends JPanel implements ActionListener {
                     public void run() {
                         Alert alert = new Alert(Alert.AlertType.INFORMATION);
                         alert.setTitle("LibertyCity | Launcher");
-                        alert.setHeaderText("The Launcher Needs to restart to apply the Changes"); // TODO: Translate
-                        alert.setContentText("Click Ok To restart the launcher"); // TODO: Translate
+                        alert.setHeaderText("Le launcher a besoin d'être re-démarré pour appliqué les changements.");
+                        alert.setContentText("Appuyez sur 'Ok' pour le relancer.");
                         alert.showAndWait();
                         try {
                             FileUtils.copyDirectory(LauncherSettings.this.engine.getGameFolder().getGameDir(), new File(LauncherPanel.varUtil.getPathToGameDirectory), true);
@@ -220,7 +220,7 @@ public class LauncherSettings extends JPanel implements ActionListener {
     public File getFile() {
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new File("."));
-        chooser.setDialogTitle("Changer le répertoire du jeu"); //TODO: Check if you want it like this
+        chooser.setDialogTitle("Changer le répertoire du jeu");
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setAcceptAllFileFilterUsed(false);
         //chooser.setFileFilter(new FileNameExtensionFilter("Changer le répertoire du jeu", ""));
