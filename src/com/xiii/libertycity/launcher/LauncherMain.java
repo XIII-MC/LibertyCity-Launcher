@@ -116,4 +116,8 @@ public class LauncherMain extends AlternativeBase {
     public static void setBanned(boolean isBanned) {
         LauncherMain.isBanned = isBanned;
     }
+
+    public static String getLauncherVersion() {
+        return launcherVersion;
+    }
 }

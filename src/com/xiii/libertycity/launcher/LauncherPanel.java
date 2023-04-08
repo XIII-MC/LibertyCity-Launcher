@@ -24,7 +24,6 @@ import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -37,49 +36,62 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.Objects;
+import java.util.UUID;
 
 public class LauncherPanel extends IScreen {
 
-    /** INTERNALS */
+    /**
+     * INTERNALS
+     */
     private final GameEngine gameEngine;
-    private File authFile;
-    private final DecimalFormat f = new DecimalFormat("00,00");
+    private final File authFile;
+    private final DecimalFormat f = new DecimalFormat("##.##");
     public static VarUtil varUtil = new VarUtil();
-    private boolean disconnected = false;
+    private boolean updating = false;
 
-    /** TOP */
+    /**
+     * TOP
+     */
     private final LauncherLabel topLabel;
     private final LauncherImage topMinecraftLogo;
     private final LauncherButton topReduceButton;
     private final LauncherButton topCloseButton;
-    private final LauncherLabel poweredByCredits;
+    private final LauncherLabel launcherCopyright;
     private final LauncherLabel devCredits;
 
-    /** SOCIAL LINKS */
+    /**
+     * SOCIAL LINKS
+     */
     private final LauncherButton discordButton;
     private final LauncherButton siteButton;
 
-    /** LOGIN */
+    /**
+     * LOGIN
+     */
     private final LauncherButton playButton;
     private final LauncherButton loginButton;
     private CustomAuth gameAuth;
     public Session gameSession;
-    private Rectangle loggedRectangle;
     private LauncherImage headImage;
-    private LauncherLabel accountLabel;
     private LauncherLabel accountNameLabel;
 
-    /** SETTINGS */
+    /**
+     * SETTINGS
+     */
     private final LauncherButton settingsButton;
 
-    /** UPDATE */
+    /**
+     * UPDATE
+     */
     private LauncherProgressBar progressBar;
     private LauncherLabel updateLabel;
     private LauncherLabel updatePercentage;
     private Thread updateThread;
     private GameUpdater gameUpdater;
 
-    /** BOTTOM */
+    /**
+     * BOTTOM
+     */
     private LauncherLabel annoucementLabel;
     private LauncherLabel patchNoteLabel;
 
@@ -100,12 +112,12 @@ public class LauncherPanel extends IScreen {
         this.topLabel.setBounds(engine.getWidth() / 2 - 80, -4, 500, 40);
 
         /* Top Credits Label */
-        this.poweredByCredits = new LauncherLabel(root);
-        this.poweredByCredits.setText("Powered By AlternativeAPI");
-        this.poweredByCredits.setFont(getFont(9F));
-        this.poweredByCredits.addStyle(getFxTransparent());
-        this.poweredByCredits.addStyle(getFxWhiteText());
-        this.poweredByCredits.setBounds(7, -9, 500, 40);
+        this.launcherCopyright = new LauncherLabel(root);
+        this.launcherCopyright.setText("LibertyCity Launcher - Version " + LauncherMain.getLauncherVersion());
+        this.launcherCopyright.setFont(getFont(9F));
+        this.launcherCopyright.addStyle(getFxTransparent());
+        this.launcherCopyright.addStyle(getFxWhiteText());
+        this.launcherCopyright.setBounds(7, -9, 500, 40);
 
         /* Top Credits Label */
         this.devCredits = new LauncherLabel(root);
@@ -185,7 +197,7 @@ public class LauncherPanel extends IScreen {
             this.playButton.setText("Jouer");
             this.playButton.addStyle(getFxColor(61, 61, 61));
             this.playButton.setOnAction(event -> {
-                if (gameAuth != null && gameAuth.isLogged() && !LauncherMain.isBanned()) {
+                if (gameAuth != null && gameAuth.isLogged() && !LauncherMain.isBanned() && !this.updating) {
                     gameSession = gameAuth.getSession();
                     File jsonFile = downloadVersion(engine.getGameLinks().getJsonUrl(), engine); //
                     updateGame(gameSession, jsonFile, root);
@@ -199,14 +211,19 @@ public class LauncherPanel extends IScreen {
         }
         this.playButton.setUnHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
-                else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) playButton.setOpacity(1.0D);
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus())
+                    playButton.setOpacity(0.5D);
+                else if ((gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) || updating)
+                    playButton.setOpacity(1.0D);
             }
         });
         this.playButton.setHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus()) playButton.setOpacity(0.5D);
-                else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) playButton.setOpacity(0.85D);
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus())
+                    playButton.setOpacity(0.5D);
+                else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus())
+                    playButton.setOpacity(0.85D);
+                if (updating) playButton.setOpacity(1.0D);
             }
         });
         this.playButton.setFont(getFont(22F));
@@ -214,27 +231,6 @@ public class LauncherPanel extends IScreen {
         this.playButton.setSize(180, 60);
         this.playButton.addStyle(getFxWhiteText());
         this.playButton.setOpacity(0.5D);
-
-        /* Settings button */
-        this.settingsButton = new LauncherButton(root);
-        //
-        this.settingsButton.setBounds(engine.getWidth() - 198, engine.getHeight() - 38, 35, 35);
-        LauncherImage settingsImage = new LauncherImage(root, loadImage(engine, "settings.png"));
-        settingsImage.setSize(28, 28);
-        this.settingsButton.setGraphic(settingsImage);
-        this.settingsButton.setOnAction(event -> {
-            final JDialog frame = new JDialog();
-            frame.setTitle("Modification des parametres");
-            frame.setContentPane(new LauncherSettings(engine));
-            frame.setResizable(false);
-            frame.setModal(true);
-            frame.setLocationRelativeTo(null);
-            frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-            frame.setSize(630, 210);
-            frame.setVisible(true);
-        });
-        this.settingsButton.setInvisible();
-        //this.settingsButton.setBounds(engine.getWidth() - 198, engine.getHeight() - 38, 35, 35);
 
         /* Microsoft login button */
         this.loginButton = new LauncherButton("Connexion", root);
@@ -271,13 +267,7 @@ public class LauncherPanel extends IScreen {
                     this.playButton.setOpacity(1.0D);
                 }
                 if (gameAuth.isLogged()) {
-                    try {
-                        final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
-                        final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                        if (Objects.equals(gameAuth.getSession().getUuid(), inputStream.readLine())) LauncherMain.setBanned(true);
-                        urlConnection.getInputStream().close();
-                    } catch (IOException ignored) {
-                    }
+                    isBanned(gameAuth.getSession().getUuid());
 
                     this.loginButton.addStyle(getFxColor(120, 0, 0));
                     this.loginButton.setText("Déconnexion");
@@ -321,10 +311,30 @@ public class LauncherPanel extends IScreen {
                     }
                     this.loginButton.addStyle(getFxColor(0, 120, 0));
                     this.loginButton.setText("Connexion");
-                    this.loginButton.setOpacity(0.5D);
+                    this.loginButton.setOpacity(1.0D);
+                    this.playButton.setOpacity(0.5D);
                 }
             }
         });
+
+        /* Settings button */
+        this.settingsButton = new LauncherButton(root);
+        LauncherImage settingsImage = new LauncherImage(root, loadImage(engine, "settings.png"));
+        settingsImage.setSize(28, 28);
+        this.settingsButton.setGraphic(settingsImage);
+        this.settingsButton.setOnAction(event -> {
+            final JDialog frame = new JDialog();
+            frame.setTitle("Modification des parametres");
+            frame.setContentPane(new LauncherSettings(engine));
+            frame.setResizable(false);
+            frame.setModal(true);
+            frame.setLocationRelativeTo(null);
+            frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+            frame.setSize(630, 210);
+            frame.setVisible(true);
+        });
+        this.settingsButton.setInvisible();
+        this.settingsButton.setBounds(engine.getWidth() - 198, engine.getHeight() - 38, 35, 35);
 
         /* Annoucements */
         this.drawRect(root, 160, engine.getHeight() - 100, 5, 90, Color.rgb(0, 140, 255, 0.85D));
@@ -351,6 +361,9 @@ public class LauncherPanel extends IScreen {
 
     private void updateGame(Session auth, File jsonFile, Pane root) {
 
+
+        this.updating = true;
+
         this.updateLabel = new LauncherLabel(root);
         this.updateLabel.setVisible(false);
         this.updateLabel.setText("Téléchargement des mods...");
@@ -369,7 +382,7 @@ public class LauncherPanel extends IScreen {
 
         this.progressBar = new LauncherProgressBar(root);
         this.progressBar.setVisible(false);
-        this.progressBar.setBounds(this.gameEngine.getWidth() -190, this.gameEngine.getHeight() - 35, 180, 10);
+        this.progressBar.setBounds(this.gameEngine.getWidth() - 190, this.gameEngine.getHeight() - 35, 180, 10);
         this.progressBar.setOpacity(0.0D);
 
         this.fadeOut(this.settingsButton, 300).setOnFinished(settingsButtonEvent -> this.settingsButton.setVisible(false));
@@ -486,11 +499,12 @@ public class LauncherPanel extends IScreen {
                 if (!stop) {
                     if (wasSpecialCase && !lines.startsWith(" ")) lines = " " + lines;
                     wasSpecialCase = false;
-                    if (!lines.endsWith(",") && lines.length() >= splitAtCharNumber)  didTimes++;
+                    if (!lines.endsWith(",") && lines.length() >= splitAtCharNumber) didTimes++;
                     else wasSpecialCase = true;
 
 
-                    if(count != 0 && (!lines.endsWith(",") && lines.length() >= splitAtCharNumber)) lines = lines + "\n";
+                    if (count != 0 && (!lines.endsWith(",") && lines.length() >= splitAtCharNumber))
+                        lines = lines + "\n";
                     else count++;
                     StringBuilder sb = new StringBuilder(lines);
 
@@ -506,8 +520,10 @@ public class LauncherPanel extends IScreen {
                 }
 
             }
+            urlConnection.getInputStream().close();
+            inputStream.close();
             return stringBuilder.toString();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -541,8 +557,10 @@ public class LauncherPanel extends IScreen {
                 }
 
             }
+            urlConnection.getInputStream().close();
+            inputStream.close();
             return stringBuilder.toString();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -561,7 +579,7 @@ public class LauncherPanel extends IScreen {
             boolean didNewLine = false;
             while (!stop) {
                 lines = inputStream.readLine();
-                if(!wasFirstLine && !didNewLine) {
+                if (!wasFirstLine && !didNewLine) {
                     //System.out.println("" + lines);
                     count = 0;
                     stringBuilder.append("\n");
@@ -571,7 +589,7 @@ public class LauncherPanel extends IScreen {
                     }
                 }
                 didNewLine = false;
-                if(lines != null) {
+                if (lines != null) {
                     for (char c : lines.toCharArray()) {
                         if (!stop) {
                             count++;
@@ -596,5 +614,24 @@ public class LauncherPanel extends IScreen {
         } catch (IOException ignored) {
         }
         return null;
+    }
+
+    private void isBanned(String uuid) {
+
+        try {
+            final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
+            final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+
+            final StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = inputStream.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+            urlConnection.getInputStream().close();
+            inputStream.close();
+            LauncherMain.setBanned(sb.toString().contains(uuid));
+        } catch (IOException ignored) {
+        }
     }
 }
