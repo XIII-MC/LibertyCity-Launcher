@@ -63,7 +63,6 @@ public class CustomCopy {
     }
 
     public static void downloadGameAndRun(GameEngine engine, GameUpdater updater, MinecraftVersion version, Session session) {
-        updater.updateAssets();
         updater.updateJars();
         updater.downloadJavaManifest();
         updater.updateLog4j();

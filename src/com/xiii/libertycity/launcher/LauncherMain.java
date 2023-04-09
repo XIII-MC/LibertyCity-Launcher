@@ -46,7 +46,7 @@ public class LauncherMain extends AlternativeBase {
         serverStatus = inputStream.readLine();
         urlConnection.getInputStream().close();
 
-        CustomAuth.setAllowRefreshToken(true);
+        CustomAuth.setAllowRefreshToken(GameUtils.getWorkingDirectory("libertycity/auth_infos.json").exists());
 
         File getFileForDirectory = GameUtils.getWorkingDirectory("libertyCity/gameDirectory");
         if (!getFileForDirectory.exists()) {
