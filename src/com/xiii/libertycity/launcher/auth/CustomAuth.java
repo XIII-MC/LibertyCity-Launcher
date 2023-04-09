@@ -20,7 +20,7 @@ public class CustomAuth {
     public static boolean isAuthenticated = false;
     private static Session session = new Session();
     private static AuthConfig authConfig;
-    private static boolean allowRefreshToken = true;
+    private static boolean allowRefreshToken;
 
     public CustomAuth() {
     }
@@ -115,5 +115,9 @@ public class CustomAuth {
         setSession(null, null, null, false);
         isAuthenticated = false;
         allowRefreshToken = false;
+    }
+
+    public static void setAllowRefreshToken(final boolean allowRefreshToken) {
+        CustomAuth.allowRefreshToken = allowRefreshToken;
     }
 }

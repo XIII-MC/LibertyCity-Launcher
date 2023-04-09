@@ -1,5 +1,6 @@
 package com.xiii.libertycity.launcher;
 
+import com.xiii.libertycity.launcher.auth.CustomAuth;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherAlert;
 import fr.trxyy.alternative.alternative_apiv2.base.*;
 import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
@@ -23,7 +24,7 @@ public class LauncherMain extends AlternativeBase {
     private final GameConnect gameConnect = new GameConnect("178.33.40.181", "25681");
     private static String serverStatus = "Maintenance";
     private static boolean isBanned = false;
-    private static final String launcherVersion = "0001";
+    private static final String launcherVersion = "0002";
 
     public static void main(String[] args) {
         Application.launch(args);
@@ -44,6 +45,8 @@ public class LauncherMain extends AlternativeBase {
         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         serverStatus = inputStream.readLine();
         urlConnection.getInputStream().close();
+
+        CustomAuth.setAllowRefreshToken(true);
 
         File getFileForDirectory = GameUtils.getWorkingDirectory("libertyCity/gameDirectory");
         if (!getFileForDirectory.exists()) {

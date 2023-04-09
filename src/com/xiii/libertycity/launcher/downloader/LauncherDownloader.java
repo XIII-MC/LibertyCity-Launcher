@@ -24,7 +24,7 @@ public class LauncherDownloader {
     public static File modFolder = GameUtils.getWorkingDirectory("libertycity/mods");
     public static File addonFolder = GameUtils.getWorkingDirectory("libertycity/mods");
     public static File resourcePackFolder = GameUtils.getWorkingDirectory("libertycity/mods");
-    private static final boolean isDev = true;
+    private static final boolean isDev = false;
     private static final String fileURLMods = "https://libraries-libertycity.websr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/mods/";
     private static final String fileURLWhitelistedMods = "https://libraries-libertycity.websr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/whitelisted_mods/";
     private static final String fileURLAddons = "https://libraries-libertycity.websr.fr/v5/libs/www/lc/files/" + (isDev ? "dev" : "game") + "/addons/";
