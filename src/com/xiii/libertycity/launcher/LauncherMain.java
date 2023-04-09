@@ -24,7 +24,7 @@ public class LauncherMain extends AlternativeBase {
     private final GameConnect gameConnect = new GameConnect("178.33.40.181", "25681");
     private static String serverStatus = "Maintenance";
     private static boolean isBanned = false;
-    private static final String launcherVersion = "0002";
+    private static final String launcherVersion = "0003";
 
     public static void main(String[] args) {
         Application.launch(args);
