@@ -180,7 +180,7 @@ public class LauncherPanel extends IScreen {
         discordImage.setSize(62, 47);
         this.discordButton.setGraphic(discordImage);
         this.discordButton.setOnAction(event -> {
-            openLink("discord.com");
+            openLink("https://discord.gg/YM5NvNAGVb");
         });
 
         this.siteButton = new LauncherButton(root);
