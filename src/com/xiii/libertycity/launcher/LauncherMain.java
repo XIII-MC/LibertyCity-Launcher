@@ -24,6 +24,7 @@ public class LauncherMain extends AlternativeBase {
     private final GameConnect gameConnect = new GameConnect("178.33.40.181", "25681");
     private static String serverStatus = "Maintenance";
     private static boolean isBanned = false;
+    private static boolean isWhitelisted = false;
     private static final String launcherVersion = "0002";
 
     private static int httpRequestCount = 0;
@@ -149,5 +150,28 @@ public class LauncherMain extends AlternativeBase {
         httpRequestCount++;
         //System.out.print("HTTP REQUEST SENT (" + (System.currentTimeMillis() - lastHTTPRequest) + "ms): " + httpRequestCount + "\n");
         lastHTTPRequest = System.currentTimeMillis();
+    }
+
+    public static void setWhitelisted(final String uuid) {
+        try {
+            final HttpsURLConnection whitelistConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/whitelist.json").openConnection();
+            LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
+            final BufferedReader whitelistInputStream = new BufferedReader(new InputStreamReader(whitelistConnection.getInputStream()));
+
+            final StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = whitelistInputStream.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+            whitelistConnection.getInputStream().close();
+            whitelistInputStream.close();
+            isWhitelisted = sb.toString().contains(uuid);
+        } catch (IOException ignored) {
+        }
+    }
+
+    public static boolean isWhitelisted() {
+        return isWhitelisted;
     }
 }

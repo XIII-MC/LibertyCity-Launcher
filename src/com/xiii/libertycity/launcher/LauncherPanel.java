@@ -10,7 +10,6 @@ import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherLabel;
 import fr.trxyy.alternative.alternative_api_uiv2.components.LauncherProgressBar;
 import fr.trxyy.alternative.alternative_apiv2.base.GameEngine;
 import fr.trxyy.alternative.alternative_apiv2.base.IScreen;
-import fr.trxyy.alternative.alternative_apiv2.minecraft.utils.GameUtils;
 import fr.trxyy.alternative.alternative_apiv2.updater.GameUpdater;
 import fr.trxyy.alternative.alternative_apiv2.utils.FontLoader;
 import fr.trxyy.alternative.alternative_authv2.base.Session;
@@ -217,15 +216,17 @@ public class LauncherPanel extends IScreen {
                     playButton.setOpacity(0.5D);
                 else if ((gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus(false)) || updating)
                     playButton.setOpacity(1.0D);
+                if (LauncherMain.isWhitelisted()) playButton.setOpacity(1.0D);
             }
         });
         this.playButton.setHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
                 if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus(false))
                     playButton.setOpacity(0.5D);
-                else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus(false))
+                else if ((gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus(false)))
                     playButton.setOpacity(0.85D);
                 if (updating) playButton.setOpacity(1.0D);
+                if (LauncherMain.isWhitelisted()) playButton.setOpacity(0.85D);
             }
         });
         this.playButton.setFont(getFont(22F));
@@ -249,14 +250,10 @@ public class LauncherPanel extends IScreen {
 
                     this.playButton.addStyle(getFxColor(61, 61, 61));
                     this.playButton.setText("Jouer");
-                } else if (LauncherMain.isBanned()) {
+                } else {
 
                     this.playButton.addStyle(getFxColor(255, 0, 0));
                     this.playButton.setText("Maintenance");
-                } else {
-
-                    this.playButton.addStyle(getFxColor(61, 61, 61));
-                    this.playButton.setText("Jouer");
                 }
 
                 this.loginButton.addStyle(getFxColor(0, 120, 0));
@@ -285,18 +282,26 @@ public class LauncherPanel extends IScreen {
                 customCopy.showMicrosoftAuth(engine, gameAuth);
                 gameSession = gameAuth.getSession();
 
-                if (LauncherMain.getServerStatus(true) || isWhitelisted(gameSession.getUuid())) {
+                isBanned(gameAuth.getSession().getUuid());
+                LauncherMain.setWhitelisted(gameAuth.getSession().getUuid());
+
+                if (LauncherMain.getServerStatus(true)) {
 
                     this.playButton.addStyle(getFxColor(0, 120, 0));
+                    this.playButton.setText("Jouer");
                     this.playButton.setOpacity(1.0D);
                 } else {
                     this.playButton.addStyle(getFxColor(255, 0, 0));
                     this.playButton.setText("Maintenance");
                     this.playButton.setOpacity(0.5D);
                 }
-                if (gameAuth.isLogged()) {
+                if (!LauncherMain.getServerStatus(false) && LauncherMain.isWhitelisted()) {
 
-                    isBanned(gameAuth.getSession().getUuid());
+                    this.playButton.addStyle(getFxColor(0, 120, 0));
+                    this.playButton.setText("Jouer");
+                    this.playButton.setOpacity(1.0D);
+                }
+                if (gameAuth.isLogged()) {
 
                     this.loginButton.addStyle(getFxColor(120, 0, 0));
                     this.loginButton.setText("Déconnexion");
@@ -406,7 +411,7 @@ public class LauncherPanel extends IScreen {
 
     private void updateGame(Session auth, File jsonFile, Pane root) {
 
-        if (LauncherMain.getServerStatus(true) || isWhitelisted(auth.getUuid())) {
+        if (LauncherMain.getServerStatus(true) || LauncherMain.isWhitelisted()) {
 
             this.updating = true;
 
@@ -654,26 +659,5 @@ public class LauncherPanel extends IScreen {
             LauncherMain.setBanned(sb.toString().contains(uuid));
         } catch (IOException ignored) {
         }
-    }
-
-    private boolean isWhitelisted(String uuid) {
-
-        try {
-            final HttpsURLConnection whitelistConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/whitelist.json").openConnection();
-            LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
-            final BufferedReader whitelistInputStream = new BufferedReader(new InputStreamReader(whitelistConnection.getInputStream()));
-
-            final StringBuffer sb = new StringBuffer();
-            String line;
-            while ((line = whitelistInputStream.readLine()) != null) {
-                sb.append(line);
-                sb.append("\n");
-            }
-            whitelistConnection.getInputStream().close();
-            whitelistInputStream.close();
-            return sb.toString().contains(uuid);
-        } catch (IOException ignored) {
-        }
-        return false;
     }
 }
