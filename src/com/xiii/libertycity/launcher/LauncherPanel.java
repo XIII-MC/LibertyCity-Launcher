@@ -197,19 +197,19 @@ public class LauncherPanel extends IScreen {
         if (LauncherMain.getServerStatus(false)) {
             this.playButton.setText("Jouer");
             this.playButton.addStyle(getFxColor(61, 61, 61));
-            this.playButton.setOnAction(event -> {
-                if (gameAuth != null && gameAuth.isLogged() && !LauncherMain.isBanned() && !this.updating) {
-                    gameSession = gameAuth.getSession();
-                    File jsonFile = downloadVersion(engine.getGameLinks().getJsonUrl(), engine); //
-                    updateGame(gameSession, jsonFile, root);
-                }
-            });
         } else {
             this.playButton.setText("Maintenance");
             this.playButton.addStyle(getFxColor(255, 0, 0));
             this.playButton.setOpacity(0.5D);
 
         }
+        this.playButton.setOnAction(event -> {
+            if ((gameAuth != null && gameAuth.isLogged() && !LauncherMain.isBanned() && !this.updating && LauncherMain.getServerStatus(false)) || (gameAuth != null && gameAuth.isLogged() && !LauncherMain.isBanned() && !this.updating && LauncherMain.isWhitelisted())) {
+                gameSession = gameAuth.getSession();
+                File jsonFile = downloadVersion(engine.getGameLinks().getJsonUrl(), engine); //
+                updateGame(gameSession, jsonFile, root);
+            }
+        });
         this.playButton.setUnHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
                 if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus(false))
@@ -282,26 +282,28 @@ public class LauncherPanel extends IScreen {
                 customCopy.showMicrosoftAuth(engine, gameAuth);
                 gameSession = gameAuth.getSession();
 
-                isBanned(gameAuth.getSession().getUuid());
-                LauncherMain.setWhitelisted(gameAuth.getSession().getUuid());
-
-                if (LauncherMain.getServerStatus(true)) {
-
-                    this.playButton.addStyle(getFxColor(0, 120, 0));
-                    this.playButton.setText("Jouer");
-                    this.playButton.setOpacity(1.0D);
-                } else {
-                    this.playButton.addStyle(getFxColor(255, 0, 0));
-                    this.playButton.setText("Maintenance");
-                    this.playButton.setOpacity(0.5D);
-                }
-                if (!LauncherMain.getServerStatus(false) && LauncherMain.isWhitelisted()) {
-
-                    this.playButton.addStyle(getFxColor(0, 120, 0));
-                    this.playButton.setText("Jouer");
-                    this.playButton.setOpacity(1.0D);
-                }
                 if (gameAuth.isLogged()) {
+
+                    isBanned(gameAuth.getSession().getUuid());
+                    LauncherMain.setWhitelisted(gameAuth.getSession().getUuid());
+
+                    if (LauncherMain.getServerStatus(true)) {
+
+                        this.playButton.addStyle(getFxColor(0, 120, 0));
+                        this.playButton.setText("Jouer");
+                        this.playButton.setOpacity(1.0D);
+                    } else {
+                        this.playButton.addStyle(getFxColor(255, 0, 0));
+                        this.playButton.setText("Maintenance");
+                        this.playButton.setOpacity(0.5D);
+                    }
+
+                    if (!LauncherMain.getServerStatus(false) && LauncherMain.isWhitelisted()) {
+
+                        this.playButton.addStyle(getFxColor(0, 120, 0));
+                        this.playButton.setText("Jouer");
+                        this.playButton.setOpacity(1.0D);
+                    }
 
                     this.loginButton.addStyle(getFxColor(120, 0, 0));
                     this.loginButton.setText("Déconnexion");
@@ -411,7 +413,7 @@ public class LauncherPanel extends IScreen {
 
     private void updateGame(Session auth, File jsonFile, Pane root) {
 
-        if (LauncherMain.getServerStatus(true) || LauncherMain.isWhitelisted()) {
+        if (LauncherMain.isWhitelisted() || LauncherMain.getServerStatus(true)) {
 
             this.updating = true;
 
