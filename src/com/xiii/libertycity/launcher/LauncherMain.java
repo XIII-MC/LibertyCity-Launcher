@@ -25,7 +25,7 @@ public class LauncherMain extends AlternativeBase {
     private static String serverStatus = "Maintenance";
     private static boolean isBanned = false;
     private static boolean isWhitelisted = false;
-    private static final String launcherVersion = "0002";
+    private static final String launcherVersion = "0003";
 
     private static int httpRequestCount = 0;
     private static long lastHTTPRequest;
