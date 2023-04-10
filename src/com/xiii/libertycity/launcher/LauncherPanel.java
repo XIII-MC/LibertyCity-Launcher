@@ -46,7 +46,7 @@ public class LauncherPanel extends IScreen {
      * INTERNALS
      */
     private final GameEngine gameEngine;
-    private final File authFile = GameUtils.getWorkingDirectory("libertycity/auth_infos.json");
+    private File authFile;
     private final DecimalFormat f = new DecimalFormat("##.##");
     public static VarUtil varUtil = new VarUtil();
     private boolean updating = false;
@@ -101,6 +101,7 @@ public class LauncherPanel extends IScreen {
     public LauncherPanel(Pane root, GameEngine engine) {
 
         this.gameEngine = engine;
+        this.authFile = new File(this.gameEngine.getGameFolder().getGameDir(), "auth_infos.json");
 
         /* Top Rectangle */
         this.drawRect(root, 0, 0, engine.getWidth(), 31, Color.rgb(0, 0, 0, 0.7));
@@ -194,7 +195,7 @@ public class LauncherPanel extends IScreen {
 
         /* Play button */
         this.playButton = new LauncherButton(root);
-        if (LauncherMain.getServerStatus()) {
+        if (LauncherMain.getServerStatus(false)) {
             this.playButton.setText("Jouer");
             this.playButton.addStyle(getFxColor(61, 61, 61));
             this.playButton.setOnAction(event -> {
@@ -212,17 +213,17 @@ public class LauncherPanel extends IScreen {
         }
         this.playButton.setUnHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus())
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus(false))
                     playButton.setOpacity(0.5D);
-                else if ((gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus()) || updating)
+                else if ((gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus(false)) || updating)
                     playButton.setOpacity(1.0D);
             }
         });
         this.playButton.setHover(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent event) {
-                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus())
+                if (gameAuth == null || LauncherMain.isBanned() || !gameAuth.isLogged() || !LauncherMain.getServerStatus(false))
                     playButton.setOpacity(0.5D);
-                else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus())
+                else if (gameAuth != null && !LauncherMain.isBanned() && gameAuth.isLogged() && LauncherMain.getServerStatus(false))
                     playButton.setOpacity(0.85D);
                 if (updating) playButton.setOpacity(1.0D);
             }
@@ -240,37 +241,61 @@ public class LauncherPanel extends IScreen {
         this.loginButton.addStyle(getFxColor(0, 120, 0));
         this.loginButton.addStyle(getFxWhiteText());
         this.loginButton.setOnAction(event -> {
+
             if (gameAuth == null) gameAuth = new CustomAuth();
+
             if (gameAuth.isLogged()) {
-                if (LauncherMain.getServerStatus()) {
+                if (LauncherMain.getServerStatus(true)) {
+
                     this.playButton.addStyle(getFxColor(61, 61, 61));
                     this.playButton.setText("Jouer");
                 } else if (LauncherMain.isBanned()) {
+
                     this.playButton.addStyle(getFxColor(255, 0, 0));
                     this.playButton.setText("Maintenance");
+                } else {
+
+                    this.playButton.addStyle(getFxColor(61, 61, 61));
+                    this.playButton.setText("Jouer");
                 }
+
                 this.loginButton.addStyle(getFxColor(0, 120, 0));
                 this.loginButton.setText("Connexion");
                 this.loginButton.setOpacity(1.0D);
+
                 this.playButton.setOpacity(0.5D);
+
                 gameAuth = null;
                 gameSession = null;
                 authFile.delete();
                 CustomAuth.resetAuth();
+
                 this.fadeOut(this.headImage, 500).setOnFinished(headImageEvent -> headImage.setVisible(false));
+
                 this.fadeOut(this.accountNameLabel, 500).setOnFinished(accountNameLabelEvent -> accountNameLabel.setVisible(false));
+
+                this.fadeOut(this.accountUUIDLabel, 500).setOnFinished(accountUUIDLabelEvent -> accountUUIDLabel.setVisible(false));
             } else {
+
                 this.loginButton.addStyle(getFxColor(255, 160, 0));
                 this.loginButton.setText("Connexion...");
                 this.loginButton.setOpacity(0.5D);
+
                 CustomCopy customCopy = new CustomCopy();
                 customCopy.showMicrosoftAuth(engine, gameAuth);
                 gameSession = gameAuth.getSession();
-                if (LauncherMain.getServerStatus()) {
+
+                if (LauncherMain.getServerStatus(true) || isWhitelisted(gameSession.getUuid())) {
+
                     this.playButton.addStyle(getFxColor(0, 120, 0));
                     this.playButton.setOpacity(1.0D);
+                } else {
+                    this.playButton.addStyle(getFxColor(255, 0, 0));
+                    this.playButton.setText("Maintenance");
+                    this.playButton.setOpacity(0.5D);
                 }
                 if (gameAuth.isLogged()) {
+
                     isBanned(gameAuth.getSession().getUuid());
 
                     this.loginButton.addStyle(getFxColor(120, 0, 0));
@@ -322,8 +347,12 @@ public class LauncherPanel extends IScreen {
                     this.fadeIn(this.accountUUIDLabel, 300);
                 } else {
 
-                    if (LauncherMain.getServerStatus()) {
+                    if (LauncherMain.getServerStatus(true)) {
                         this.playButton.addStyle(getFxColor(61, 61, 61));
+                    } else {
+                        this.playButton.addStyle(getFxColor(255, 0, 0));
+                        this.playButton.setOpacity(0.5D);
+                        this.playButton.setText("Maintenance");
                     }
                     this.loginButton.addStyle(getFxColor(0, 120, 0));
                     this.loginButton.setText("Connexion");
@@ -377,97 +406,105 @@ public class LauncherPanel extends IScreen {
 
     private void updateGame(Session auth, File jsonFile, Pane root) {
 
-        this.updating = true;
+        if (LauncherMain.getServerStatus(true) || isWhitelisted(auth.getUuid())) {
 
-        this.updateLabel = new LauncherLabel(root);
-        this.updateLabel.setVisible(false);
-        this.updateLabel.setText("Téléchargement des mods...");
-        this.updateLabel.setFont(getItalicFont(12F));
-        this.updateLabel.setBounds(this.gameEngine.getWidth() - 190, this.gameEngine.getHeight() - 18, 200, 10);
-        this.updateLabel.addStyle(getFxWhiteText());
-        this.updateLabel.setOpacity(0.0D);
+            this.updating = true;
 
-        this.updatePercentage = new LauncherLabel(root);
-        this.updatePercentage.setVisible(false);
-        this.updatePercentage.setText("00.00%");
-        this.updatePercentage.setFont(getItalicFont(12F));
-        this.updatePercentage.setBounds(this.gameEngine.getWidth() - 45, this.gameEngine.getHeight() - 18, 200, 10);
-        this.updatePercentage.addStyle(getFxWhiteText());
-        this.updatePercentage.setOpacity(0.0D);
+            this.updateLabel = new LauncherLabel(root);
+            this.updateLabel.setVisible(false);
+            this.updateLabel.setText("Téléchargement des mods...");
+            this.updateLabel.setFont(getItalicFont(12F));
+            this.updateLabel.setBounds(this.gameEngine.getWidth() - 190, this.gameEngine.getHeight() - 18, 200, 10);
+            this.updateLabel.addStyle(getFxWhiteText());
+            this.updateLabel.setOpacity(0.0D);
 
-        this.progressBar = new LauncherProgressBar(root);
-        this.progressBar.setVisible(false);
-        this.progressBar.setBounds(this.gameEngine.getWidth() - 190, this.gameEngine.getHeight() - 35, 180, 10);
-        this.progressBar.setOpacity(0.0D);
+            this.updatePercentage = new LauncherLabel(root);
+            this.updatePercentage.setVisible(false);
+            this.updatePercentage.setText("00.00%");
+            this.updatePercentage.setFont(getItalicFont(12F));
+            this.updatePercentage.setBounds(this.gameEngine.getWidth() - 45, this.gameEngine.getHeight() - 18, 200, 10);
+            this.updatePercentage.addStyle(getFxWhiteText());
+            this.updatePercentage.setOpacity(0.0D);
 
-        this.fadeOut(this.settingsButton, 300).setOnFinished(settingsButtonEvent -> this.settingsButton.setVisible(false));
-        this.fadeOut(this.loginButton, 300).setOnFinished(event -> {
-            this.loginButton.setVisible(false);
+            this.progressBar = new LauncherProgressBar(root);
+            this.progressBar.setVisible(false);
+            this.progressBar.setBounds(this.gameEngine.getWidth() - 190, this.gameEngine.getHeight() - 35, 180, 10);
+            this.progressBar.setOpacity(0.0D);
 
-            this.fadeOut(this.playButton, 300).setOnFinished(playButtonEvent -> {
-                this.playButton.setVisible(false);
-                this.playButton.addStyle(getFxColor(255, 160, 0));
-                this.playButton.setText("Mise à jour...");
-                this.playButton.setVisible(true);
-                fadeIn(this.playButton, 300);
+            this.fadeOut(this.settingsButton, 300).setOnFinished(settingsButtonEvent -> this.settingsButton.setVisible(false));
+            this.fadeOut(this.loginButton, 300).setOnFinished(event -> {
+                this.loginButton.setVisible(false);
 
-                this.fadeOut(this.progressBar, 300).setOnFinished(progressBarEvent -> {
-                    this.progressBar.setVisible(true);
-                    fadeIn(this.progressBar, 300);
+                this.fadeOut(this.playButton, 300).setOnFinished(playButtonEvent -> {
+                    this.playButton.setVisible(false);
+                    this.playButton.addStyle(getFxColor(255, 160, 0));
+                    this.playButton.setText("Mise à jour...");
+                    this.playButton.setVisible(true);
+                    fadeIn(this.playButton, 300);
 
-                    this.fadeOut(this.updateLabel, 300).setOnFinished(updateLabelEvent -> {
-                        this.updateLabel.setVisible(true);
-                        fadeIn(this.updateLabel, 300);
+                    this.fadeOut(this.progressBar, 300).setOnFinished(progressBarEvent -> {
+                        this.progressBar.setVisible(true);
+                        fadeIn(this.progressBar, 300);
 
-                        this.fadeOut(this.updatePercentage, 300).setOnFinished(updatePercentageEvent -> {
-                            this.updatePercentage.setVisible(true);
-                            fadeIn(this.updatePercentage, 300);
+                        this.fadeOut(this.updateLabel, 300).setOnFinished(updateLabelEvent -> {
+                            this.updateLabel.setVisible(true);
+                            fadeIn(this.updateLabel, 300);
+
+                            this.fadeOut(this.updatePercentage, 300).setOnFinished(updatePercentageEvent -> {
+                                this.updatePercentage.setVisible(true);
+                                fadeIn(this.updatePercentage, 300);
+                            });
                         });
                     });
                 });
             });
-        });
 
-        this.updateThread = new Thread(() -> {
-            gameUpdater = new GameUpdater(prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), gameEngine);
-            gameEngine.reg(gameUpdater);
-            LauncherDownloader downloader = new LauncherDownloader(this.gameEngine);
-            new Thread(() -> {
-                downloader.downloadMods();
-                downloader.downloadAddons();
-                downloader.downloadResourcePacks();
-            }).start();
+            this.updateThread = new Thread(() -> {
+                gameUpdater = new GameUpdater(prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), gameEngine);
+                gameEngine.reg(gameUpdater);
+                LauncherDownloader downloader = new LauncherDownloader(this.gameEngine);
+                new Thread(() -> {
+                    downloader.downloadMods();
+                    downloader.downloadAddons();
+                    downloader.downloadResourcePacks();
+                }).start();
 
-            Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
-                double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);
-                updatePercentage.setText(f.format(percent * 100.0D) + "%");
-                progressBar.setProgress(percent);
-                updateLabel.setText(gameEngine.getGameUpdater().getUpdateText());
-            }, new KeyValue[0]), new KeyFrame(Duration.seconds(0.1D), new KeyValue[0]));
-            t.setCycleCount(Animation.INDEFINITE);
-            t.play();
-            CustomCopy.downloadGameAndRun(gameEngine, gameUpdater, prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), auth);
-        });
-        this.updateThread.start();
-        Platform.runLater(new Runnable() {
-            public void run() {
-                varUtil.isRunning = true;
-            }
-        });
-
-        new Thread(() -> {
-            try {
-
-                Thread.sleep(1500);
-                while (varUtil.isRunning) {
-                    Thread.sleep(5);
+                Timeline t = new Timeline(new KeyFrame(Duration.seconds(0.0D), event -> {
+                    double percent = (gameEngine.getGameUpdater().downloadedFiles * 100.0D / gameEngine.getGameUpdater().filesToDownload / 100.0D);
+                    updatePercentage.setText(f.format(percent * 100.0D) + "%");
+                    progressBar.setProgress(percent);
+                    updateLabel.setText(gameEngine.getGameUpdater().getUpdateText());
+                }, new KeyValue[0]), new KeyFrame(Duration.seconds(0.1D), new KeyValue[0]));
+                t.setCycleCount(Animation.INDEFINITE);
+                t.play();
+                CustomCopy.downloadGameAndRun(gameEngine, gameUpdater, prepareGameUpdate(gameUpdater, gameEngine, auth, jsonFile), auth);
+            });
+            this.updateThread.start();
+            Platform.runLater(new Runnable() {
+                public void run() {
+                    varUtil.isRunning = true;
                 }
-                showFirstScreen();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            });
 
-        }).start();
+            new Thread(() -> {
+                try {
+
+                    Thread.sleep(1500);
+                    while (varUtil.isRunning) {
+                        Thread.sleep(5);
+                    }
+                    showFirstScreen();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }).start();
+        } else {
+
+            this.playButton.setText("Maintenance");
+            this.playButton.addStyle(getFxColor(255, 0, 0));
+            this.playButton.setOpacity(0.5D);
+        }
     }
 
     public void showFirstScreen() {
@@ -512,6 +549,7 @@ public class LauncherPanel extends IScreen {
             boolean wasSpecialCase = false;
 
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/annoucement.txt").openConnection();
+            LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 
             final StringBuilder stringBuilder = new StringBuilder();
@@ -562,6 +600,7 @@ public class LauncherPanel extends IScreen {
             boolean stop = false;
 
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/launcher_patchnote.txt").openConnection();
+            LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 
             final StringBuilder stringBuilder = new StringBuilder();
@@ -601,6 +640,7 @@ public class LauncherPanel extends IScreen {
 
         try {
             final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/banlist.json").openConnection();
+            LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
             final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
 
             final StringBuffer sb = new StringBuffer();
@@ -614,5 +654,26 @@ public class LauncherPanel extends IScreen {
             LauncherMain.setBanned(sb.toString().contains(uuid));
         } catch (IOException ignored) {
         }
+    }
+
+    private boolean isWhitelisted(String uuid) {
+
+        try {
+            final HttpsURLConnection whitelistConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/http/whitelist.json").openConnection();
+            LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
+            final BufferedReader whitelistInputStream = new BufferedReader(new InputStreamReader(whitelistConnection.getInputStream()));
+
+            final StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = whitelistInputStream.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+            whitelistConnection.getInputStream().close();
+            whitelistInputStream.close();
+            return sb.toString().contains(uuid);
+        } catch (IOException ignored) {
+        }
+        return false;
     }
 }

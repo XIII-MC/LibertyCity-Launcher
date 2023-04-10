@@ -24,7 +24,10 @@ public class LauncherMain extends AlternativeBase {
     private final GameConnect gameConnect = new GameConnect("178.33.40.181", "25681");
     private static String serverStatus = "Maintenance";
     private static boolean isBanned = false;
-    private static final String launcherVersion = "0003";
+    private static final String launcherVersion = "0002";
+
+    private static int httpRequestCount = 0;
+    private static long lastHTTPRequest;
 
     public static void main(String[] args) {
         Application.launch(args);
@@ -34,19 +37,21 @@ public class LauncherMain extends AlternativeBase {
     public void start(Stage stage) throws IOException {
 
         final HttpsURLConnection versionChecker = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/launcher/launcher_version.cfg").openConnection();
+        LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
         final BufferedReader versionInputStream = new BufferedReader(new InputStreamReader(versionChecker.getInputStream()));
         if (!launcherVersion.equalsIgnoreCase(versionInputStream.readLine())) {
             new LauncherAlert("Mise à jour requise! \nVeuillez vous rendre sur notre Discord pour télécharger la nouvelle version du launcher!", "");
             System.exit(0);
         }
         versionChecker.getInputStream().close();
+        versionInputStream.close();
 
         final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/status.cfg").openConnection();
+        LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
         final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
         serverStatus = inputStream.readLine();
         urlConnection.getInputStream().close();
-
-        CustomAuth.setAllowRefreshToken(GameUtils.getWorkingDirectory("libertycity/auth_infos.json").exists());
+        inputStream.close();
 
         File getFileForDirectory = GameUtils.getWorkingDirectory("libertyCity/gameDirectory");
         if (!getFileForDirectory.exists()) {
@@ -94,6 +99,7 @@ public class LauncherMain extends AlternativeBase {
         Scene scene = new Scene(createContent());
         LauncherBase launcherBase = new LauncherBase(stage, scene, StageStyle.UNDECORATED, gameEngine);
         launcherBase.setIconImage(stage, "favicon.png");
+        CustomAuth.setAllowRefreshToken(new File(this.gameEngine.getGameFolder().getGameDir(), "auth_infos.json").exists());
     }
 
     private Parent createContent() {
@@ -108,7 +114,22 @@ public class LauncherMain extends AlternativeBase {
         return contentPane;
     }
 
-    public static boolean getServerStatus() {
+    public static boolean getServerStatus(final boolean newRequest) {
+        try {
+
+            if (newRequest) {
+
+                final HttpsURLConnection urlConnection = (HttpsURLConnection) new URL("https://libraries-libertycity.websr.fr/v5/libs/www/lc/status.cfg").openConnection();
+                LauncherMain.updateHTTPRequestCount(); // TODO: UPDATE HTTP REQUEST
+                final BufferedReader inputStream = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+
+                serverStatus = inputStream.readLine();
+
+                urlConnection.getInputStream().close();
+                inputStream.close();
+            } else return serverStatus.equalsIgnoreCase("Ok");
+        } catch (IOException ignored) {
+        }
         return serverStatus.equalsIgnoreCase("Ok");
     }
 
@@ -116,11 +137,17 @@ public class LauncherMain extends AlternativeBase {
         return isBanned;
     }
 
-    public static void setBanned(boolean isBanned) {
+    public static void setBanned(final boolean isBanned) {
         LauncherMain.isBanned = isBanned;
     }
 
     public static String getLauncherVersion() {
         return launcherVersion;
+    }
+
+    public static void updateHTTPRequestCount() {
+        httpRequestCount++;
+        //System.out.print("HTTP REQUEST SENT (" + (System.currentTimeMillis() - lastHTTPRequest) + "ms): " + httpRequestCount + "\n");
+        lastHTTPRequest = System.currentTimeMillis();
     }
 }
