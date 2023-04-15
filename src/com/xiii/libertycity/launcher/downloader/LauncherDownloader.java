@@ -35,8 +35,8 @@ public class LauncherDownloader {
     public LauncherDownloader(GameEngine engine) {
         this.engine = engine;
         modFolder = new File(engine.getGameFolder().getGameDir(), "mods");
-        addonFolder = new File(engine.getGameFolder().getGameDir(), "mods");
-        resourcePackFolder = new File(engine.getGameFolder().getGameDir(), "mods");
+        addonFolder = new File(engine.getGameFolder().getGameDir(), "");
+        resourcePackFolder = new File(engine.getGameFolder().getGameDir(), "resourcepacks");
     }
 
     public void downloadMods() {
@@ -216,6 +216,9 @@ public class LauncherDownloader {
             }
         }
         isDone = true;
+    }
+
+    public void downloadAssets() {
 
     }
 

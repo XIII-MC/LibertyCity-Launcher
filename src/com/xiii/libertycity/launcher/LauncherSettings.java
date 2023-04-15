@@ -125,7 +125,7 @@ public class LauncherSettings extends JPanel implements ActionListener {
         if (e.getSource().equals(this.chooseDirectory)) {
             File dir = getFile();
             if (dir != null) {
-                LauncherPanel.varUtil.getPathToGameDirectory = getFile().getAbsolutePath();
+                LauncherPanel.varUtil.getPathToGameDirectory = dir.getAbsolutePath();
 
                 File getFileForDirectory = GameUtils.getWorkingDirectory("libertyCity/gameDirectory");
                 FileWriter fw = null;
